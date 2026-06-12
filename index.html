@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>KRISHNA App - OTP Login & Markets</title>
+  <!-- Firebase SDKs -->
+  <script type="module">
+    // Import Firebase modules dynamically
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Your Firebase configuration (UPDATED WITH YOUR CREDENTIALS)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAhMB5memk6Q4NbDX0_c-Wy5cs3Lg3yk4E",
+      authDomain: "krishna-567.firebaseapp.com",
+      projectId: "krishna-567",
+      storageBucket: "krishna-567.firebasestorage.app",
+      messagingSenderId: "1072566787782",
+      appId: "1:1072566787782:web:f5a74b482ff0477b1a81c7",
+      measurementId: "G-F7BZ275JBJ"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Global variables
+    let confirmationResult = null;
+    let currentPhoneNumber = "";
+
+    // DOM elements
+    const splashScreen = document.getElementById('splash-screen');
+    const authContainer = document.getElementById('auth-container');
+    const dashboardContainer = document.getElementById('dashboard-container');
+    const otpSection = document.getElementById('otp-section');
+    const createAccountSection = document.getElementById('create-account-section');
+    const phoneInput = document.getElementById('phone-number');
+    const sendOtpBtn = document.getElementById('send-otp-btn');
+    const otpInput = document.getElementById('otp-code');
+    const verifyOtpBtn = document.getElementById('verify-otp-btn');
+    const nameInput = document.getElementById('full-name');
+    const cityInput = document.getElementById('city');
+    const dobInput = document.getElementById('dob');
+    const createAccountBtn = document.getElementById('create-account-btn');
+    const backToLoginBtn = document.getElementById('back-to-login');
+
+    // Helper: Show/Hide sections & loading state
+    function showLoader(btn, isLoading, originalText) {
+      if (isLoading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Please wait...';
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // Render market results (static dynamic example)
+    function renderMarketResults() {
+      const markets = [
+        { name: "SRIDEVI", digits: "124-71-560" },
+        { name: "TIME BAZAR", digits: "123-62-570" },
+        { name: "MILAN DAY", digits: "456-89-123" },
+        { name: "KALYAN NIGHT", digits: "789-45-678" },
+        { name: "RAJDHANI", digits: "234-90-345" },
+        { name: "SUPREME", digits: "567-12-890" }
+      ];
+      
+      const marketResultsDiv = document.getElementById('market-results');
+      const marketResultsDashboard = document.getElementById('market-results-dashboard');
+      
+      const html = markets.map(m => `
+        <div class="market-card">
+          <div class="market-name">${m.name}</div>
+          <div class="market-digits">${m.digits}</div>
+        </div>
+      `).join('');
+      
+      if (marketResultsDiv) marketResultsDiv.innerHTML = html;
+      if (marketResultsDashboard) marketResultsDashboard.innerHTML = html;
+    }
+
+    // Show dashboard with user name and market results
+    async function showDashboard(userId, userData) {
+      authContainer.style.display = 'none';
+      dashboardContainer.style.display = 'flex';
+      document.getElementById('user-welcome').innerText = `Welcome, ${userData.name || 'User'}!`;
+      document.getElementById('user-city-dob').innerText = `${userData.city || 'City'} • ${userData.dob || 'DOB'}`;
+      renderMarketResults();
+    }
+
+    // Handle OTP verification & check if account exists
+    verifyOtpBtn.addEventListener('click', async () => {
+      const code = otpInput.value.trim();
+      if (!code) {
+        alert("Please enter OTP");
+        return;
+      }
+      showLoader(verifyOtpBtn, true, "Verifying...");
+      try {
+        const result = await confirmationResult.confirm(code);
+        const user = result.user;
+        
+        // Check Firestore for existing user profile
+        const userDocRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userDocRef);
+        
+        if (docSnap.exists()) {
+          // Existing user -> directly show dashboard
+          const userData = docSnap.data();
+          await showDashboard(user.uid, userData);
+        } else {
+          // New user -> show create account form
+          otpSection.style.display = 'none';
+          createAccountSection.style.display = 'block';
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Invalid OTP or verification failed: " + error.message);
+      } finally {
+        showLoader(verifyOtpBtn, false, "Verify OTP");
+      }
+    });
+
+    // Send OTP using phone number
+    sendOtpBtn.addEventListener('click', async () => {
+      let phone = phoneInput.value.trim();
+      if (!phone) {
+        alert("Please enter phone number");
+        return;
+      }
+      // Basic Indian phone number formatting (adjust as needed)
+      if (!phone.startsWith('+')) {
+        if (phone.startsWith('0')) phone = '+91' + phone.slice(1);
+        else if (phone.length === 10) phone = '+91' + phone;
+        else if (phone.length > 10 && !phone.startsWith('+')) phone = '+' + phone;
+      }
+      currentPhoneNumber = phone;
+      
+      showLoader(sendOtpBtn, true, "Sending OTP...");
+      try {
+        // Set up recaptcha verifier (invisible)
+        const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+        });
+        confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
+        alert("OTP sent successfully!");
+        // Switch to OTP input view
+        document.getElementById('login-card').style.display = 'none';
+        document.getElementById('otp-card').style.display = 'block';
+      } catch (error) {
+        console.error(error);
+        alert("Error sending OTP: " + error.message);
+        if (error.code === 'auth/invalid-phone-number') alert("Invalid phone number format. Use +91XXXXXXXXXX");
+      } finally {
+        showLoader(sendOtpBtn, false, "Send OTP");
+      }
+    });
+
+    // Create account (save name, city, DOB)
+    createAccountBtn.addEventListener('click', async () => {
+      const name = nameInput.value.trim();
+      const city = cityInput.value.trim();
+      const dob = dobInput.value.trim();
+      if (!name || !city || !dob) {
+        alert("Please fill all fields: Name, City, Date of Birth");
+        return;
+      }
+      showLoader(createAccountBtn, true, "Creating Account...");
+      try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No authenticated user");
+        const userData = { name, city, dob, phone: currentPhoneNumber, createdAt: new Date().toISOString() };
+        await setDoc(doc(db, "users", user.uid), userData);
+        await showDashboard(user.uid, userData);
+      } catch (error) {
+        console.error(error);
+        alert("Failed to save profile: " + error.message);
+      } finally {
+        showLoader(createAccountBtn, false, "Create Account");
+      }
+    });
+
+    // Back to login from create account
+    backToLoginBtn.addEventListener('click', () => {
+      createAccountSection.style.display = 'none';
+      otpSection.style.display = 'block';
+      document.getElementById('login-card').style.display = 'block';
+      document.getElementById('otp-card').style.display = 'none';
+      // Clear OTP input
+      otpInput.value = '';
+    });
+
+    // Auto sign-out listener & persist session
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // if user logged in but dashboard not shown & we are not in creation flow
+        const userDocRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists() && dashboardContainer.style.display !== 'flex') {
+          showDashboard(user.uid, docSnap.data());
+        } else if (!docSnap.exists() && authContainer.style.display !== 'none') {
+          // Already logged in but no profile -> show create form
+          if (otpSection.style.display !== 'none') {
+            otpSection.style.display = 'none';
+            createAccountSection.style.display = 'block';
+          }
+        }
+      } else {
+        // No user, ensure auth screen is visible
+        if (dashboardContainer.style.display === 'flex') dashboardContainer.style.display = 'none';
+        authContainer.style.display = 'flex';
+        // reset forms
+        otpSection.style.display = 'block';
+        createAccountSection.style.display = 'none';
+        document.getElementById('login-card').style.display = 'block';
+        document.getElementById('otp-card').style.display = 'none';
+        phoneInput.value = '';
+        otpInput.value = '';
+        nameInput.value = '';
+        cityInput.value = '';
+        dobInput.value = '';
+      }
+    });
+
+    // Initial splash hide after 1.5 sec
+    setTimeout(() => {
+      splashScreen.style.display = 'none';
+      authContainer.style.display = 'flex';
+      renderMarketResults();
+    }, 1500);
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: #121212;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Mobile view container - looks like Android app */
+    .app-container {
+      width: 100%;
+      max-width: 450px;
+      height: 100vh;
+      background: #f5f7fb;
+      box-shadow: 0 0 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Splash Screen */
+    #splash-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1e2a3a, #0f172a);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    /* Auth Container: split screen concept: top half fixed (login form area), bottom half scrollable market results */
+    #auth-container {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      background: #ffffff;
+    }
+
+    .top-half-fixed {
+      flex: 0 0 50%;
+      background: linear-gradient(145deg, #ffffff, #f0f2f5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      z-index: 2;
+    }
+
+    .bottom-half-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+      background: #f8fafc;
+      scrollbar-width: thin;
+    }
+
+    /* Card style for login/otp/create account */
+    .card {
+      background: white;
+      border-radius: 32px;
+      padding: 24px 20px;
+      width: 100%;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+      transition: all 0.2s;
+    }
+
+    .card h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .card p.sub {
+      color: #475569;
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 28px;
+      font-size: 1rem;
+      background: #fefefe;
+      transition: 0.2s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #3b82f6;
+      color: #3b82f6;
+    }
+
+    .btn-outline:hover {
+      background: #eff6ff;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Market Results cards */
+    .market-card {
+      background: white;
+      border-radius: 24px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      border: 1px solid #eef2ff;
+      transition: 0.1s;
+    }
+    .market-name {
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+    .market-digits {
+      font-family: monospace;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #2563eb;
+      margin-top: 6px;
+      letter-spacing: 1px;
+    }
+
+    /* Dashboard container: also split half and half */
+    #dashboard-container {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      background: #f1f5f9;
+    }
+    .dashboard-top {
+      flex: 0 0 45%;
+      background: linear-gradient(130deg, #0f2b3d, #1e3a5f);
+      color: white;
+      padding: 32px 24px;
+      border-bottom-left-radius: 36px;
+      border-bottom-right-radius: 36px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .dashboard-top h2 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+    .dashboard-top p {
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+    .dashboard-bottom {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 16px;
+      padding-left: 8px;
+      border-left: 5px solid #3b82f6;
+    }
+
+    /* back to login button small */
+    .text-link {
+      text-align: center;
+      margin-top: 20px;
+      color: #3b82f6;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* hide recaptcha container dummy */
+    #recaptcha-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      opacity: 0;
+      pointer-events: none;
+      height: 0;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 20px 16px; }
+      .market-digits { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <span style="font-size: 2.5rem;">🎲</span>
+    <span style="margin-top: 1rem;">KRISHNA APP</span>
+  </div>
+
+  <!-- Authentication Container (Login / Create Account) -->
+  <div id="auth-container">
+    <!-- Top half fixed: login/create card -->
+    <div class="top-half-fixed">
+      <div style="width: 100%;">
+        <!-- OTP Section (Login) -->
+        <div id="otp-section">
+          <div id="login-card" class="card">
+            <h2>Welcome Back</h2>
+            <p class="sub">Enter your mobile number to continue</p>
+            <div class="input-group">
+              <label>Phone Number</label>
+              <input type="tel" id="phone-number" placeholder="+91 9876543210" autocomplete="off">
+            </div>
+            <button id="send-otp-btn" class="btn">Send OTP</button>
+          </div>
+          <div id="otp-card" class="card" style="display: none;">
+            <h2>Verify OTP</h2>
+            <p class="sub">Enter the code sent to your phone</p>
+            <div class="input-group">
+              <label>OTP Code</label>
+              <input type="text" id="otp-code" placeholder="123456" maxlength="6" autocomplete="off">
+            </div>
+            <button id="verify-otp-btn" class="btn">Verify & Login</button>
+          </div>
+        </div>
+        <!-- Create Account Section -->
+        <div id="create-account-section" style="display: none;">
+          <div class="card">
+            <h2>Complete Profile</h2>
+            <p class="sub">Tell us about yourself</p>
+            <div class="input-group">
+              <label>Full Name</label>
+              <input type="text" id="full-name" placeholder="Enter your full name" autocomplete="name">
+            </div>
+            <div class="input-group">
+              <label>City</label>
+              <input type="text" id="city" placeholder="Your city" autocomplete="address-level2">
+            </div>
+            <div class="input-group">
+              <label>Date of Birth</label>
+              <input type="date" id="dob">
+            </div>
+            <button id="create-account-btn" class="btn">Create Account</button>
+            <div id="back-to-login" class="text-link">← Back to Login</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Bottom half scrolling: market results preview (even before login) -->
+    <div class="bottom-half-scroll">
+      <div style="font-weight: 600; margin-bottom: 12px; color: #1e293b; font-size: 0.9rem;">📈 Latest Market Results</div>
+      <div id="market-results"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard Container (after login) -->
+  <div id="dashboard-container">
+    <div class="dashboard-top">
+      <h2 id="user-welcome">Welcome!</h2>
+      <p id="user-city-dob">Loading...</p>
+    </div>
+    <div class="dashboard-bottom">
+      <div class="section-title">📊 Today's Market Updates</div>
+      <div id="market-results-dashboard"></div>
+    </div>
+  </div>
+  <div id="recaptcha-container"></div>
+</div>
+</body>
+</html>
