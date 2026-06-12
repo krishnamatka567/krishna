@@ -10,7 +10,7 @@
     // 🔥 FIREBASE CONFIGURATION - REPLACE WITH YOUR OWN CREDENTIALS
     // ============================================================
     const firebaseConfig = {
-      apiKey: "AIzaSyAhMB5memk6Q4NbDX0_c-Wy5cs3Lg3yk4E",
+      apiKey: "AIzaSyDummyKeyReplaceWithYourRealKey123456",
       authDomain: "your-project.firebaseapp.com",
       projectId: "your-project-id",
       storageBucket: "your-project.appspot.com",
@@ -92,13 +92,13 @@
     
     function triggerVibration() {
       const now = Date.now();
-      if (now - lastVibrateTime > 200) {
+      if (now - lastVibrateTime > 150) {
         lastVibrateTime = now;
         const cards = document.querySelectorAll('.market-card');
         cards.forEach((card, index) => {
-          if (Math.random() > 0.7) {
-            card.style.transform = 'translateX(2px)';
-            setTimeout(() => { if(card) card.style.transform = ''; }, 50);
+          if (Math.random() > 0.6) {
+            card.style.transform = 'translateX(3px)';
+            setTimeout(() => { if(card) card.style.transform = ''; }, 60);
           }
         });
       }
@@ -121,9 +121,9 @@
           container.scrollTop = 0;
           triggerVibration();
         } else {
-          currentScrollTop += 0.5;
+          currentScrollTop += 0.6;
           container.scrollTop = currentScrollTop;
-          if (Math.random() > 0.95) triggerVibration();
+          if (Math.random() > 0.92) triggerVibration();
         }
       }, 25);
     }
@@ -385,25 +385,25 @@
       background: #ffffff;
     }
     
-    /* Top half - Blue background, KRISHNA at very top */
+    /* Top half - Blue background, KRISHNA at top */
     .top-half-blue {
-      flex: 0 0 45%;
+      flex: 0 0 48%;
       background: linear-gradient(145deg, #1e4b8f, #0d355c);
       position: relative;
       display: flex;
       flex-direction: column;
-      padding: 20px 20px 30px 20px;
+      padding: 15px 20px 25px 20px;
       z-index: 2;
     }
     
-    /* KRISHNA headline at top with reduced top space */
+    /* KRISHNA headline at top */
     .headline-top {
       text-align: center;
-      margin-top: 5px;
-      margin-bottom: 20px;
+      margin-top: 8px;
+      margin-bottom: 15px;
     }
     .brand-name-main {
-      font-size: 2.8rem;
+      font-size: 2.6rem;
       font-weight: 800;
       color: white;
       text-shadow: 0 2px 15px rgba(0,0,0,0.3);
@@ -483,30 +483,65 @@
       cursor: pointer;
     }
     
-    /* Bottom half with UPWARD CURVE (convex at top) - like the image */
+    /* ============================================ */
+    /* MIDDLE BLUE CURVE - EXACTLY LIKE REFERENCE IMAGE */
+    /* ============================================ */
+    .curve-container {
+      position: relative;
+      background: #f1f5f9;
+      height: 35px;
+      margin-top: -8px;
+      z-index: 5;
+    }
+    
+    .blue-curve {
+      position: absolute;
+      top: -25px;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      background: #f1f5f9;
+      border-radius: 50% 50% 0 0;
+      z-index: 3;
+    }
+    
+    /* Alternative approach: curve that looks like the image */
     .bottom-half-scroll {
       flex: 1;
       overflow: hidden;
       background: #f1f5f9;
       position: relative;
-      border-top-left-radius: 45px;
-      border-top-right-radius: 45px;
-      margin-top: -12px;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      margin-top: 0;
       z-index: 1;
     }
     
-    /* The upward curve effect */
+    /* The upward curve effect - like the blue curve in your image */
     .bottom-half-scroll::before {
       content: '';
       position: absolute;
-      top: -30px;
+      top: -28px;
       left: 0;
       width: 100%;
       height: 45px;
       background: #f1f5f9;
       border-radius: 50% 50% 0 0;
       z-index: 2;
-      box-shadow: 0 -8px 20px rgba(0,0,0,0.08);
+      box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+    }
+    
+    /* Extra decorative curve line to match image style */
+    .curve-accent {
+      position: absolute;
+      top: -30px;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+      border-radius: 10px 10px 0 0;
+      z-index: 3;
+      opacity: 0.5;
     }
     
     /* Scroll container */
@@ -514,7 +549,7 @@
       height: 100%;
       overflow-y: auto;
       scroll-behavior: smooth;
-      padding: 25px 14px 16px 14px;
+      padding: 28px 14px 16px 14px;
       scrollbar-width: thin;
     }
     .scroll-container::-webkit-scrollbar {
@@ -539,7 +574,6 @@
       100% { box-shadow: 0 5px 18px rgba(37,99,235,0.15); }
     }
     
-    /* Vibration class for dynamic effect */
     .vibrate-on-scroll {
       transition: transform 0.03s linear;
     }
@@ -569,9 +603,9 @@
       background: #f1f5f9;
     }
     .dashboard-top-blue {
-      flex: 0 0 42%;
+      flex: 0 0 45%;
       background: linear-gradient(145deg, #1e4b8f, #0d355c);
-      padding: 28px 24px 20px 24px;
+      padding: 25px 24px 20px 24px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -595,15 +629,15 @@
       flex: 1;
       overflow: hidden;
       position: relative;
-      border-top-left-radius: 45px;
-      border-top-right-radius: 45px;
-      margin-top: -12px;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      margin-top: 0;
       background: #f1f5f9;
     }
     .dashboard-bottom-scroll::before {
       content: '';
       position: absolute;
-      top: -30px;
+      top: -28px;
       left: 0;
       width: 100%;
       height: 45px;
@@ -612,7 +646,7 @@
       z-index: 2;
     }
     .dashboard-bottom-scroll .scroll-container {
-      padding-top: 25px;
+      padding-top: 28px;
     }
     
     .spinner {
@@ -653,7 +687,7 @@
       .brand-name-main { font-size: 2.3rem; }
       .market-digits { font-size: 1.1rem; }
       .card-glass { padding: 14px; }
-      .top-half-blue { padding: 15px 20px 25px 20px; }
+      .top-half-blue { padding: 12px 20px 20px 20px; }
     }
   </style>
 </head>
@@ -667,14 +701,14 @@
   
   <!-- Authentication Container -->
   <div id="auth-container">
-    <!-- Top half: Blue background, KRISHNA at very top with reduced spacing -->
+    <!-- Top half: Blue background, KRISHNA at very top -->
     <div class="top-half-blue">
       <div class="headline-top">
         <div class="brand-name-main">KRISHNA</div>
         <div class="sub-brand-main">OFFICIAL MATKA</div>
       </div>
       <div class="form-card-wrapper">
-        <!-- Login Card (Phone input) - NO "Mobile Login" text, NO "+91 auto" text -->
+        <!-- Login Card - Clean without extra labels -->
         <div id="login-card" class="card-glass">
           <div class="input-group">
             <div class="phone-prefix-wrapper">
@@ -706,7 +740,13 @@
       </div>
     </div>
     
-    <!-- Bottom half: Auto scrolling markets with upward curve -->
+    <!-- Blue Curve Accent - exactly like reference image -->
+    <div class="curve-container">
+      <div class="blue-curve"></div>
+      <div class="curve-accent"></div>
+    </div>
+    
+    <!-- Bottom half: Auto scrolling markets -->
     <div class="bottom-half-scroll">
       <div id="auto-scroll-markets" class="scroll-container"></div>
     </div>
