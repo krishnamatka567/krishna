@@ -3,33 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <title>KRISHNA - Satta Matka App</title>
+  <title>KRISHNA - Matka Results</title>
   <!-- Firebase SDKs -->
   <script type="module">
+    // ============================================================
+    // 🔥 FIREBASE CONFIGURATION - REPLACE WITH YOUR OWN CREDENTIALS
+    // ============================================================
+    // IMPORTANT: Get these from your Firebase Console
+    // 1. Go to https://console.firebase.google.com/
+    // 2. Create or select your project
+    // 3. Click on web app (</>) icon
+    // 4. Copy the config object below
+    // 5. Enable Phone Authentication in Firebase Console
+    // 6. Enable Firestore Database
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyDummyKeyReplaceWithYourRealKey123456",
+      authDomain: "your-project.firebaseapp.com",
+      projectId: "your-project-id",
+      storageBucket: "your-project.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "1:123456789012:web:abcdef123456"
+    };
+    
+    // NOTE: The above is a placeholder. You MUST replace with actual Firebase config.
+    // For testing without Firebase, uncomment the demo mode section below.
+    // ============================================================
+    
     // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    // ========== 🔥 REPLACE WITH YOUR FIREBASE CONFIG ==========
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
+    
+    // Initialize Firebase with error handling
+    let auth, db;
+    let firebaseInitialized = false;
+    
+    try {
+      const app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      firebaseInitialized = true;
+      console.log("Firebase initialized successfully");
+    } catch (error) {
+      console.error("Firebase initialization error:", error);
+      // Show demo mode message
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        const errorMsg = document.createElement('div');
+        errorMsg.style.cssText = 'position:absolute; bottom:20px; font-size:11px; color:#ffcccc; text-align:center;';
+        errorMsg.innerHTML = '⚠️ Firebase not configured. Using demo mode.<br>Replace apiKey in firebaseConfig.';
+        splash.appendChild(errorMsg);
+      }
+    }
+    
     // Global variables
     let confirmationResult = null;
     let currentPhoneNumber = "";
-
+    
     // DOM Elements
     const splashScreen = document.getElementById('splash-screen');
     const authContainer = document.getElementById('auth-container');
@@ -50,7 +81,7 @@
     const userCitySpan = document.getElementById('user-city-dob');
     const autoScrollDiv = document.getElementById('auto-scroll-markets');
     const autoScrollDashboard = document.getElementById('auto-scroll-markets-dashboard');
-
+    
     // Market Data (repeated for infinite scroll effect)
     const marketItems = [
       { name: "SRIDEVI", digits: "124-71-560" },
@@ -58,16 +89,15 @@
       { name: "MILAN DAY", digits: "456-89-123" },
       { name: "KALYAN NIGHT", digits: "789-45-678" },
       { name: "RAJDHANI", digits: "234-90-345" },
-      { name: "GALI DISAWAR", digits: "111-22-333" },
-      { name: "SRIDEVI", digits: "124-71-560" },
-      { name: "TIME BAZAR", digits: "123-62-570" }
+      { name: "GALI", digits: "111-22-333" },
+      { name: "DISAWAR", digits: "555-77-888" }
     ];
-
+    
     // Create repeating content for smooth infinite scroll
     function buildMarketHTML() {
       let html = '';
-      // Repeat 5 times to create seamless loop
-      for (let i = 0; i < 5; i++) {
+      // Repeat many times for seamless loop
+      for (let i = 0; i < 8; i++) {
         marketItems.forEach(item => {
           html += `
             <div class="market-card">
@@ -79,51 +109,42 @@
       }
       return html;
     }
-
-    // Setup auto-scrolling with smooth animation
-    let scrollInterval;
+    
+    // Auto-scrolling with smooth animation
+    let scrollInterval = null;
     let currentScrollTop = 0;
     let isScrolling = true;
-
+    
     function startAutoScroll(container) {
       if (!container) return;
-      // Clear any existing interval
       if (scrollInterval) clearInterval(scrollInterval);
       
-      // Reset scroll position to 0
       container.scrollTop = 0;
       currentScrollTop = 0;
-      
-      // Fill content
       container.innerHTML = buildMarketHTML();
       
-      // Smooth auto-scroll: move 1px every 30ms (slow and smooth)
       scrollInterval = setInterval(() => {
-        if (!isScrolling) return;
-        if (!container) return;
+        if (!isScrolling || !container) return;
         
-        // Get max scroll height
         const maxScroll = container.scrollHeight - container.clientHeight;
-        
         if (currentScrollTop >= maxScroll) {
-          // Seamless reset to top without jump
           currentScrollTop = 0;
           container.scrollTop = 0;
         } else {
-          currentScrollTop += 0.8; // Smooth slow speed
+          currentScrollTop += 0.6; // Smooth slow speed
           container.scrollTop = currentScrollTop;
         }
       }, 30);
     }
-
+    
     function stopAutoScroll() {
       if (scrollInterval) {
         clearInterval(scrollInterval);
         scrollInterval = null;
       }
     }
-
-    // Pause on user interaction
+    
+    // Pause scrolling on user interaction
     function bindScrollEvents(container) {
       if (!container) return;
       container.addEventListener('touchstart', () => { isScrolling = false; });
@@ -131,7 +152,7 @@
       container.addEventListener('mousedown', () => { isScrolling = false; });
       container.addEventListener('mouseup', () => { setTimeout(() => { isScrolling = true; }, 3000); });
     }
-
+    
     // Helper: Show loader
     function showLoader(btn, isLoading, originalText) {
       if (isLoading) {
@@ -142,139 +163,218 @@
         btn.innerHTML = originalText;
       }
     }
-
+    
+    // Demo mode - store user in localStorage
+    let demoUser = null;
+    
     // Show Dashboard
     async function showDashboard(userId, userData) {
       authContainer.style.display = 'none';
       dashboardContainer.style.display = 'flex';
       userWelcomeSpan.innerText = userData.name || 'KRISHNA';
       userCitySpan.innerText = `${userData.city || 'City'} • ${userData.dob || 'DOB'}`;
-      // Start auto-scroll for dashboard
       startAutoScroll(autoScrollDashboard);
       bindScrollEvents(autoScrollDashboard);
     }
-
-    // Verify OTP
-    verifyOtpBtn.addEventListener('click', async () => {
-      const code = otpInput.value.trim();
-      if (!code) {
-        alert("Please enter OTP");
-        return;
-      }
-      showLoader(verifyOtpBtn, true, "Verifying...");
-      try {
-        const result = await confirmationResult.confirm(code);
-        const user = result.user;
-        const userDocRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(userDocRef);
-        
-        if (docSnap.exists()) {
-          await showDashboard(user.uid, docSnap.data());
-        } else {
-          loginCard.style.display = 'none';
-          otpCard.style.display = 'none';
-          createAccountCard.style.display = 'block';
-        }
-      } catch (error) {
-        alert("Invalid OTP: " + error.message);
-      } finally {
-        showLoader(verifyOtpBtn, false, "Verify OTP");
-      }
-    });
-
-    // Send OTP with +91 prefix & 10 digit validation
-    sendOtpBtn.addEventListener('click', async () => {
-      let rawPhone = phoneInput.value.trim();
-      // Remove any non-digit
-      let digits = rawPhone.replace(/\D/g, '');
-      if (digits.length !== 10) {
-        alert("Please enter exactly 10 digits (e.g., 9876543210)");
-        return;
-      }
-      const fullNumber = '+91' + digits;
-      currentPhoneNumber = fullNumber;
+    
+    // Demo mode login function (when Firebase fails)
+    function demoLogin(phoneNumber) {
+      // Check if user exists in localStorage
+      const storedUsers = JSON.parse(localStorage.getItem('demoUsers') || '{}');
+      const userData = storedUsers[phoneNumber];
       
-      showLoader(sendOtpBtn, true, "Sending OTP...");
-      try {
-        const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-        confirmationResult = await signInWithPhoneNumber(auth, fullNumber, recaptchaVerifier);
-        alert("OTP sent successfully!");
+      if (userData) {
+        // Existing user
+        showDashboard(phoneNumber, userData);
+      } else {
+        // New user - show create account
         loginCard.style.display = 'none';
-        otpCard.style.display = 'block';
-      } catch (error) {
-        alert("Error: " + error.message);
-      } finally {
-        showLoader(sendOtpBtn, false, "Send OTP");
+        otpCard.style.display = 'none';
+        createAccountCard.style.display = 'block';
+        currentPhoneNumber = phoneNumber;
       }
-    });
-
-    // Create Account
-    createAccountBtn.addEventListener('click', async () => {
-      const name = nameInput.value.trim();
-      const city = cityInput.value.trim();
-      const dob = dobInput.value.trim();
-      if (!name || !city || !dob) {
-        alert("Please fill all fields");
-        return;
-      }
-      showLoader(createAccountBtn, true, "Creating...");
-      try {
-        const user = auth.currentUser;
-        if (!user) throw new Error("No user");
-        const userData = { name, city, dob, phone: currentPhoneNumber, createdAt: new Date().toISOString() };
-        await setDoc(doc(db, "users", user.uid), userData);
-        await showDashboard(user.uid, userData);
-      } catch (error) {
-        alert("Failed: " + error.message);
-      } finally {
-        showLoader(createAccountBtn, false, "Create Account");
-      }
-    });
-
-    backToLoginBtn.addEventListener('click', () => {
-      createAccountCard.style.display = 'none';
-      loginCard.style.display = 'block';
-      otpCard.style.display = 'none';
-      otpInput.value = '';
-    });
-
-    // Auth State Listener
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDocRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists() && dashboardContainer.style.display !== 'flex') {
-          await showDashboard(user.uid, docSnap.data());
-        } else if (!docSnap.exists() && authContainer.style.display !== 'none') {
-          if (loginCard.style.display !== 'none') {
+    }
+    
+    function demoCreateAccount(name, city, dob) {
+      const users = JSON.parse(localStorage.getItem('demoUsers') || '{}');
+      users[currentPhoneNumber] = { name, city, dob, phone: currentPhoneNumber };
+      localStorage.setItem('demoUsers', JSON.stringify(users));
+      showDashboard(currentPhoneNumber, { name, city, dob });
+    }
+    
+    // Verify OTP
+    if (verifyOtpBtn) {
+      verifyOtpBtn.addEventListener('click', async () => {
+        const code = otpInput.value.trim();
+        if (!code) {
+          alert("Please enter OTP");
+          return;
+        }
+        
+        if (!firebaseInitialized) {
+          // Demo mode - accept any 6-digit OTP
+          if (code.length === 6) {
+            demoLogin(currentPhoneNumber);
+            alert("Demo mode: Login successful!");
+          } else {
+            alert("Please enter 6-digit OTP");
+          }
+          return;
+        }
+        
+        showLoader(verifyOtpBtn, true, "Verifying...");
+        try {
+          const result = await confirmationResult.confirm(code);
+          const user = result.user;
+          const userDocRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(userDocRef);
+          
+          if (docSnap.exists()) {
+            await showDashboard(user.uid, docSnap.data());
+          } else {
             loginCard.style.display = 'none';
             otpCard.style.display = 'none';
             createAccountCard.style.display = 'block';
           }
+        } catch (error) {
+          alert("Invalid OTP: " + error.message);
+        } finally {
+          showLoader(verifyOtpBtn, false, "Verify OTP");
         }
-      } else {
-        if (dashboardContainer.style.display === 'flex') dashboardContainer.style.display = 'none';
-        authContainer.style.display = 'flex';
+      });
+    }
+    
+    // Send OTP with +91 prefix & 10 digit validation
+    if (sendOtpBtn) {
+      sendOtpBtn.addEventListener('click', async () => {
+        let rawPhone = phoneInput.value.trim();
+        let digits = rawPhone.replace(/\D/g, '');
+        if (digits.length !== 10) {
+          alert("Please enter exactly 10 digits (e.g., 9876543210)");
+          return;
+        }
+        const fullNumber = '+91' + digits;
+        currentPhoneNumber = fullNumber;
+        
+        if (!firebaseInitialized) {
+          // Demo mode - just show OTP screen
+          alert("Demo Mode: OTP would be sent to " + fullNumber + "\nEnter any 6-digit code to continue.");
+          loginCard.style.display = 'none';
+          otpCard.style.display = 'block';
+          return;
+        }
+        
+        showLoader(sendOtpBtn, true, "Sending OTP...");
+        try {
+          const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
+          confirmationResult = await signInWithPhoneNumber(auth, fullNumber, recaptchaVerifier);
+          alert("OTP sent successfully!");
+          loginCard.style.display = 'none';
+          otpCard.style.display = 'block';
+        } catch (error) {
+          let errorMsg = error.message;
+          if (error.code === 'auth/api-key-not-valid') {
+            errorMsg = "Firebase API Key not configured. Please replace the firebaseConfig with your actual credentials from Firebase Console.";
+          }
+          alert("Error: " + errorMsg);
+        } finally {
+          showLoader(sendOtpBtn, false, "Send OTP");
+        }
+      });
+    }
+    
+    // Create Account
+    if (createAccountBtn) {
+      createAccountBtn.addEventListener('click', async () => {
+        const name = nameInput.value.trim();
+        const city = cityInput.value.trim();
+        const dob = dobInput.value.trim();
+        if (!name || !city || !dob) {
+          alert("Please fill all fields");
+          return;
+        }
+        
+        if (!firebaseInitialized) {
+          demoCreateAccount(name, city, dob);
+          return;
+        }
+        
+        showLoader(createAccountBtn, true, "Creating...");
+        try {
+          const user = auth.currentUser;
+          if (!user) throw new Error("No user");
+          const userData = { name, city, dob, phone: currentPhoneNumber, createdAt: new Date().toISOString() };
+          await setDoc(doc(db, "users", user.uid), userData);
+          await showDashboard(user.uid, userData);
+        } catch (error) {
+          alert("Failed: " + error.message);
+        } finally {
+          showLoader(createAccountBtn, false, "Create Account");
+        }
+      });
+    }
+    
+    if (backToLoginBtn) {
+      backToLoginBtn.addEventListener('click', () => {
+        createAccountCard.style.display = 'none';
         loginCard.style.display = 'block';
         otpCard.style.display = 'none';
-        createAccountCard.style.display = 'none';
-        phoneInput.value = '';
         otpInput.value = '';
-        // Restart auto-scroll for auth bottom section
-        startAutoScroll(autoScrollDiv);
-        bindScrollEvents(autoScrollDiv);
-      }
-    });
-
-    // Initial Splash + start auto-scroll on auth screen
+      });
+    }
+    
+    // Auth State Listener
+    if (firebaseInitialized) {
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const userDocRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists() && dashboardContainer.style.display !== 'flex') {
+            await showDashboard(user.uid, docSnap.data());
+          } else if (!docSnap.exists() && authContainer.style.display !== 'none') {
+            if (loginCard.style.display !== 'none') {
+              loginCard.style.display = 'none';
+              otpCard.style.display = 'none';
+              createAccountCard.style.display = 'block';
+            }
+          }
+        } else {
+          if (dashboardContainer.style.display === 'flex') dashboardContainer.style.display = 'none';
+          authContainer.style.display = 'flex';
+          loginCard.style.display = 'block';
+          otpCard.style.display = 'none';
+          createAccountCard.style.display = 'none';
+          phoneInput.value = '';
+          otpInput.value = '';
+          startAutoScroll(autoScrollDiv);
+          bindScrollEvents(autoScrollDiv);
+        }
+      });
+    }
+    
+    // Initial Splash + start auto-scroll
     setTimeout(() => {
       splashScreen.style.display = 'none';
       authContainer.style.display = 'flex';
       startAutoScroll(autoScrollDiv);
       bindScrollEvents(autoScrollDiv);
     }, 1500);
+    
+    // Restrict phone input to 10 digits only
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/\D/g, '').slice(0, 10);
+      });
+    }
+    
+    // OTP input restrict to 6 digits
+    if (otpInput) {
+      otpInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/\D/g, '').slice(0, 6);
+      });
+    }
   </script>
-
+  
   <style>
     * {
       margin: 0;
@@ -282,7 +382,7 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-
+    
     body {
       font-family: 'Segoe UI', 'Poppins', 'Roboto', sans-serif;
       background: #0a0c10;
@@ -291,7 +391,7 @@
       align-items: center;
       min-height: 100vh;
     }
-
+    
     /* Mobile container like Android app */
     .app-container {
       width: 100%;
@@ -305,7 +405,7 @@
       position: relative;
       border-radius: 0;
     }
-
+    
     /* Splash Screen with animation */
     #splash-screen {
       position: absolute;
@@ -322,11 +422,11 @@
       color: white;
       animation: fadeOut 0.8s ease-in-out 1.2s forwards;
     }
-
+    
     @keyframes fadeOut {
       to { opacity: 0; visibility: hidden; }
     }
-
+    
     .splash-title {
       font-size: 3.2rem;
       font-weight: 800;
@@ -334,14 +434,14 @@
       text-shadow: 0 4px 15px rgba(0,0,0,0.2);
       animation: bounceText 0.6s ease-out;
     }
-
+    
     @keyframes bounceText {
       0% { transform: scale(0.8); opacity: 0; }
       80% { transform: scale(1.1); }
       100% { transform: scale(1); opacity: 1; }
     }
-
-    /* Auth Container - split design with blue top and curved divider */
+    
+    /* Auth Container - split design with blue top and UPWARD CURVE (convex top of bottom section) */
     #auth-container {
       display: none;
       flex-direction: column;
@@ -349,23 +449,47 @@
       width: 100%;
       background: #ffffff;
     }
-
-    /* Top half - Blue Gradient Background */
+    
+    /* Top half - Blue Gradient Background with curved bottom */
     .top-half-blue {
       flex: 0 0 50%;
       background: linear-gradient(145deg, #1e4b8f, #0d355c);
-      border-bottom-left-radius: 48px;
-      border-bottom-right-radius: 48px;
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
       z-index: 2;
     }
-
+    
+    /* UPWARD CURVE - convex curve at the TOP of bottom section (looks like upside-down curve) */
+    /* Using a pseudo-element on the bottom section to create upward curve */
+    .bottom-half-scroll {
+      flex: 1;
+      overflow: hidden;
+      background: #f1f5f9;
+      position: relative;
+      border-top-left-radius: 40px;
+      border-top-right-radius: 40px;
+      margin-top: -8px;
+      z-index: 1;
+    }
+    
+    /* Shadow and inner curve effect */
+    .bottom-half-scroll::before {
+      content: '';
+      position: absolute;
+      top: -25px;
+      left: 0;
+      width: 100%;
+      height: 35px;
+      background: #f1f5f9;
+      border-radius: 50% 50% 0 0;
+      z-index: 2;
+      box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+    }
+    
     /* Animated KRISHNA name top center */
     .brand-animation {
       text-align: center;
@@ -389,7 +513,7 @@
       color: rgba(255,255,255,0.8);
       letter-spacing: 1px;
     }
-
+    
     /* Cards Container Inside Top Half */
     .form-card-wrapper {
       width: 100%;
@@ -407,6 +531,7 @@
       font-size: 1.4rem;
       color: #0d355c;
       margin-bottom: 6px;
+      text-align: center;
     }
     .input-group {
       margin-bottom: 15px;
@@ -431,6 +556,27 @@
       border-color: #1e4b8f;
       box-shadow: 0 0 0 3px rgba(30,75,143,0.2);
     }
+    .phone-prefix-wrapper {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 28px;
+      border: 1px solid #cbd5e1;
+    }
+    .phone-prefix {
+      padding-left: 16px;
+      font-weight: bold;
+      background: #f1f5f9;
+      border-radius: 28px 0 0 28px;
+      padding: 12px 10px;
+      color: #1e4b8f;
+    }
+    .phone-prefix-wrapper input {
+      border: none;
+      flex: 1;
+      border-radius: 28px;
+      padding: 12px 14px;
+    }
     .btn-primary {
       background: #0d355c;
       width: 100%;
@@ -453,20 +599,13 @@
       font-weight: 500;
       cursor: pointer;
     }
-
-    /* Bottom half - Auto scroll markets */
-    .bottom-half-scroll {
-      flex: 1;
-      overflow: hidden;
-      background: #f1f5f9;
-      position: relative;
-    }
+    
+    /* Scroll container */
     .scroll-container {
       height: 100%;
       overflow-y: auto;
       scroll-behavior: smooth;
-      padding: 16px 12px;
-      /* Hide scrollbar for cleaner look */
+      padding: 20px 12px 16px 12px;
       scrollbar-width: thin;
     }
     .scroll-container::-webkit-scrollbar {
@@ -478,7 +617,7 @@
       padding: 14px 16px;
       margin-bottom: 12px;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       border: 1px solid #e2e8f0;
       transition: all 0.1s;
     }
@@ -498,8 +637,8 @@
       margin-top: 6px;
       letter-spacing: 1.5px;
     }
-
-    /* Dashboard style - similar split with blue gradient */
+    
+    /* Dashboard style - similar split with blue gradient and upward curve */
     #dashboard-container {
       display: none;
       flex-direction: column;
@@ -509,8 +648,6 @@
     .dashboard-top-blue {
       flex: 0 0 45%;
       background: linear-gradient(145deg, #1e4b8f, #0d355c);
-      border-bottom-left-radius: 48px;
-      border-bottom-right-radius: 48px;
       padding: 32px 24px;
       display: flex;
       flex-direction: column;
@@ -522,6 +659,10 @@
       font-weight: 700;
       animation: fadeSlide 0.5s ease;
     }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .city-dob-text {
       margin-top: 8px;
       opacity: 0.85;
@@ -530,9 +671,28 @@
     .dashboard-bottom-scroll {
       flex: 1;
       overflow: hidden;
-      padding: 16px 12px;
+      padding: 0;
+      position: relative;
+      border-top-left-radius: 40px;
+      border-top-right-radius: 40px;
+      margin-top: -8px;
+      background: #f1f5f9;
     }
-
+    .dashboard-bottom-scroll::before {
+      content: '';
+      position: absolute;
+      top: -25px;
+      left: 0;
+      width: 100%;
+      height: 35px;
+      background: #f1f5f9;
+      border-radius: 50% 50% 0 0;
+      z-index: 2;
+    }
+    .dashboard-bottom-scroll .scroll-container {
+      padding-top: 20px;
+    }
+    
     .spinner {
       display: inline-block;
       width: 16px;
@@ -543,8 +703,20 @@
       animation: spin 0.6s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Curved divider effect via border radius already */
+    
+    /* Demo mode badge */
+    .demo-badge {
+      position: fixed;
+      bottom: 5px;
+      right: 5px;
+      font-size: 9px;
+      color: #888;
+      background: rgba(0,0,0,0.5);
+      padding: 2px 6px;
+      border-radius: 10px;
+      z-index: 999;
+    }
+    
     @media (max-width: 480px) {
       .brand-name { font-size: 2rem; }
       .card-glass { padding: 16px; }
@@ -558,10 +730,10 @@
     <div class="splash-title">KRISHNA</div>
     <div style="margin-top: 10px; font-size: 0.9rem;">MATKA RESULTS</div>
   </div>
-
-  <!-- Authentication Container: Blue top half + scrolling bottom -->
+  
+  <!-- Authentication Container: Blue top half + scrolling bottom with UPWARD CURVE -->
   <div id="auth-container">
-    <!-- Top half: Blue background, curved bottom, KRISHNA animation + login/OTP forms -->
+    <!-- Top half: Blue background, KRISHNA animation + forms -->
     <div class="top-half-blue">
       <div class="brand-animation">
         <div class="brand-name">KRISHNA</div>
@@ -570,30 +742,30 @@
       <div class="form-card-wrapper">
         <!-- Login Card (Phone input) -->
         <div id="login-card" class="card-glass">
-          <h3 style="text-align:center;">Mobile Login</h3>
+          <h3>Mobile Login</h3>
           <div class="input-group">
             <label>📞 Phone Number (+91 auto)</label>
-            <div style="display: flex; align-items: center; background: white; border-radius: 28px; border:1px solid #cbd5e1;">
-              <span style="padding-left: 16px; font-weight: bold; background: #f1f5f9; border-radius: 28px 0 0 28px; padding: 12px 8px;">+91</span>
-              <input type="tel" id="phone-number" placeholder="9876543210" style="border: none; flex:1; border-radius: 28px;" maxlength="10" inputmode="numeric">
+            <div class="phone-prefix-wrapper">
+              <span class="phone-prefix">+91</span>
+              <input type="tel" id="phone-number" placeholder="9876543210" maxlength="10" inputmode="numeric">
             </div>
           </div>
           <button id="send-otp-btn" class="btn-primary">Send OTP</button>
         </div>
-
+        
         <!-- OTP Card -->
         <div id="otp-card" class="card-glass" style="display: none;">
-          <h3 style="text-align:center;">Verify OTP</h3>
+          <h3>Verify OTP</h3>
           <div class="input-group">
             <label>🔐 6-digit Code</label>
-            <input type="text" id="otp-code" placeholder="123456" maxlength="6">
+            <input type="text" id="otp-code" placeholder="123456" maxlength="6" inputmode="numeric">
           </div>
           <button id="verify-otp-btn" class="btn-primary">Verify & Login</button>
         </div>
-
+        
         <!-- Create Account Card -->
         <div id="create-account-card" class="card-glass" style="display: none;">
-          <h3 style="text-align:center;">Create Account</h3>
+          <h3>Create Account</h3>
           <div class="input-group"><label>Full Name</label><input type="text" id="full-name" placeholder="Krishna Kumar"></div>
           <div class="input-group"><label>City</label><input type="text" id="city" placeholder="Mumbai"></div>
           <div class="input-group"><label>Date of Birth</label><input type="date" id="dob"></div>
@@ -602,13 +774,13 @@
         </div>
       </div>
     </div>
-
-    <!-- Bottom half: AUTO SCROLLING MARKET RESULTS (repeated, smooth & slow) -->
+    
+    <!-- Bottom half: AUTO SCROLLING MARKET RESULTS with UPWARD CURVE (convex top) -->
     <div class="bottom-half-scroll">
       <div id="auto-scroll-markets" class="scroll-container"></div>
     </div>
   </div>
-
+  
   <!-- Dashboard Container (after login) -->
   <div id="dashboard-container">
     <div class="dashboard-top-blue">
@@ -620,29 +792,7 @@
     </div>
   </div>
   <div id="recaptcha-container"></div>
+  <div class="demo-badge">⚡ MATKA APP</div>
 </div>
-
-<script type="module">
-  // Additional ensure that auto-scrolling works perfectly after dashboard
-  // Already handled in main module, but re-run if needed
-  import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  // This script just ensures that the dashboard market container gets same treatment
-  window.addEventListener('load', () => {
-    const authDiv = document.getElementById('auto-scroll-markets');
-    if(authDiv && authDiv.children.length === 0) {
-      // fallback fill
-      const mkts = ['SRIDEVI','TIME BAZAR','MILAN DAY','KALYAN NIGHT','RAJDHANI'];
-      const digitsList = ['124-71-560','123-62-570','456-89-123','789-45-678','234-90-345'];
-      let html = '';
-      for(let i=0;i<20;i++){
-        let idx = i%5;
-        html += `<div class="market-card"><div class="market-name">${mkts[idx]}</div><div class="market-digits">${digitsList[idx]}</div></div>`;
-      }
-      if(authDiv) authDiv.innerHTML = html;
-      const dashDiv = document.getElementById('auto-scroll-markets-dashboard');
-      if(dashDiv && dashDiv.children.length===0) dashDiv.innerHTML = html;
-    }
-  });
-</script>
 </body>
 </html>
