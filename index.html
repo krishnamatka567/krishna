@@ -9,14 +9,6 @@
     // ============================================================
     // 🔥 FIREBASE CONFIGURATION - REPLACE WITH YOUR OWN CREDENTIALS
     // ============================================================
-    // IMPORTANT: Get these from your Firebase Console
-    // 1. Go to https://console.firebase.google.com/
-    // 2. Create or select your project
-    // 3. Click on web app (</>) icon
-    // 4. Copy the config object below
-    // 5. Enable Phone Authentication in Firebase Console
-    // 6. Enable Firestore Database
-    
     const firebaseConfig = {
       apiKey: "AIzaSyDummyKeyReplaceWithYourRealKey123456",
       authDomain: "your-project.firebaseapp.com",
@@ -26,16 +18,10 @@
       appId: "1:123456789012:web:abcdef123456"
     };
     
-    // NOTE: The above is a placeholder. You MUST replace with actual Firebase config.
-    // For testing without Firebase, uncomment the demo mode section below.
-    // ============================================================
-    
-    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     
-    // Initialize Firebase with error handling
     let auth, db;
     let firebaseInitialized = false;
     
@@ -44,20 +30,10 @@
       auth = getAuth(app);
       db = getFirestore(app);
       firebaseInitialized = true;
-      console.log("Firebase initialized successfully");
     } catch (error) {
-      console.error("Firebase initialization error:", error);
-      // Show demo mode message
-      const splash = document.getElementById('splash-screen');
-      if (splash) {
-        const errorMsg = document.createElement('div');
-        errorMsg.style.cssText = 'position:absolute; bottom:20px; font-size:11px; color:#ffcccc; text-align:center;';
-        errorMsg.innerHTML = '⚠️ Firebase not configured. Using demo mode.<br>Replace apiKey in firebaseConfig.';
-        splash.appendChild(errorMsg);
-      }
+      console.error("Firebase error:", error);
     }
     
-    // Global variables
     let confirmationResult = null;
     let currentPhoneNumber = "";
     
@@ -82,7 +58,7 @@
     const autoScrollDiv = document.getElementById('auto-scroll-markets');
     const autoScrollDashboard = document.getElementById('auto-scroll-markets-dashboard');
     
-    // Market Data (repeated for infinite scroll effect)
+    // Market Data
     const marketItems = [
       { name: "SRIDEVI", digits: "124-71-560" },
       { name: "TIME BAZAR", digits: "123-62-570" },
@@ -93,14 +69,12 @@
       { name: "DISAWAR", digits: "555-77-888" }
     ];
     
-    // Create repeating content for smooth infinite scroll
     function buildMarketHTML() {
       let html = '';
-      // Repeat many times for seamless loop
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 10; i++) {
         marketItems.forEach(item => {
           html += `
-            <div class="market-card">
+            <div class="market-card vibrate-on-scroll">
               <div class="market-name">${item.name}</div>
               <div class="market-digits">${item.digits}</div>
             </div>
@@ -110,10 +84,25 @@
       return html;
     }
     
-    // Auto-scrolling with smooth animation
+    // Smooth auto-scrolling with vibration effect
     let scrollInterval = null;
     let currentScrollTop = 0;
     let isScrolling = true;
+    let lastVibrateTime = 0;
+    
+    function triggerVibration() {
+      const now = Date.now();
+      if (now - lastVibrateTime > 200) {
+        lastVibrateTime = now;
+        const cards = document.querySelectorAll('.market-card');
+        cards.forEach((card, index) => {
+          if (Math.random() > 0.7) {
+            card.style.transform = 'translateX(2px)';
+            setTimeout(() => { if(card) card.style.transform = ''; }, 50);
+          }
+        });
+      }
+    }
     
     function startAutoScroll(container) {
       if (!container) return;
@@ -130,11 +119,13 @@
         if (currentScrollTop >= maxScroll) {
           currentScrollTop = 0;
           container.scrollTop = 0;
+          triggerVibration();
         } else {
-          currentScrollTop += 0.6; // Smooth slow speed
+          currentScrollTop += 0.5;
           container.scrollTop = currentScrollTop;
+          if (Math.random() > 0.95) triggerVibration();
         }
-      }, 30);
+      }, 25);
     }
     
     function stopAutoScroll() {
@@ -144,16 +135,14 @@
       }
     }
     
-    // Pause scrolling on user interaction
     function bindScrollEvents(container) {
       if (!container) return;
       container.addEventListener('touchstart', () => { isScrolling = false; });
-      container.addEventListener('touchend', () => { setTimeout(() => { isScrolling = true; }, 3000); });
+      container.addEventListener('touchend', () => { setTimeout(() => { isScrolling = true; }, 2000); });
       container.addEventListener('mousedown', () => { isScrolling = false; });
-      container.addEventListener('mouseup', () => { setTimeout(() => { isScrolling = true; }, 3000); });
+      container.addEventListener('mouseup', () => { setTimeout(() => { isScrolling = true; }, 2000); });
     }
     
-    // Helper: Show loader
     function showLoader(btn, isLoading, originalText) {
       if (isLoading) {
         btn.disabled = true;
@@ -164,10 +153,6 @@
       }
     }
     
-    // Demo mode - store user in localStorage
-    let demoUser = null;
-    
-    // Show Dashboard
     async function showDashboard(userId, userData) {
       authContainer.style.display = 'none';
       dashboardContainer.style.display = 'flex';
@@ -177,17 +162,12 @@
       bindScrollEvents(autoScrollDashboard);
     }
     
-    // Demo mode login function (when Firebase fails)
     function demoLogin(phoneNumber) {
-      // Check if user exists in localStorage
       const storedUsers = JSON.parse(localStorage.getItem('demoUsers') || '{}');
       const userData = storedUsers[phoneNumber];
-      
       if (userData) {
-        // Existing user
         showDashboard(phoneNumber, userData);
       } else {
-        // New user - show create account
         loginCard.style.display = 'none';
         otpCard.style.display = 'none';
         createAccountCard.style.display = 'block';
@@ -202,23 +182,14 @@
       showDashboard(currentPhoneNumber, { name, city, dob });
     }
     
-    // Verify OTP
     if (verifyOtpBtn) {
       verifyOtpBtn.addEventListener('click', async () => {
         const code = otpInput.value.trim();
-        if (!code) {
-          alert("Please enter OTP");
-          return;
-        }
+        if (!code) { alert("Please enter OTP"); return; }
         
         if (!firebaseInitialized) {
-          // Demo mode - accept any 6-digit OTP
-          if (code.length === 6) {
-            demoLogin(currentPhoneNumber);
-            alert("Demo mode: Login successful!");
-          } else {
-            alert("Please enter 6-digit OTP");
-          }
+          if (code.length === 6) { demoLogin(currentPhoneNumber); alert("Login successful!"); }
+          else { alert("Enter 6-digit OTP"); }
           return;
         }
         
@@ -228,7 +199,6 @@
           const user = result.user;
           const userDocRef = doc(db, "users", user.uid);
           const docSnap = await getDoc(userDocRef);
-          
           if (docSnap.exists()) {
             await showDashboard(user.uid, docSnap.data());
           } else {
@@ -236,29 +206,21 @@
             otpCard.style.display = 'none';
             createAccountCard.style.display = 'block';
           }
-        } catch (error) {
-          alert("Invalid OTP: " + error.message);
-        } finally {
-          showLoader(verifyOtpBtn, false, "Verify OTP");
-        }
+        } catch (error) { alert("Invalid OTP: " + error.message); }
+        finally { showLoader(verifyOtpBtn, false, "Verify OTP"); }
       });
     }
     
-    // Send OTP with +91 prefix & 10 digit validation
     if (sendOtpBtn) {
       sendOtpBtn.addEventListener('click', async () => {
         let rawPhone = phoneInput.value.trim();
         let digits = rawPhone.replace(/\D/g, '');
-        if (digits.length !== 10) {
-          alert("Please enter exactly 10 digits (e.g., 9876543210)");
-          return;
-        }
+        if (digits.length !== 10) { alert("Please enter exactly 10 digits"); return; }
         const fullNumber = '+91' + digits;
         currentPhoneNumber = fullNumber;
         
         if (!firebaseInitialized) {
-          // Demo mode - just show OTP screen
-          alert("Demo Mode: OTP would be sent to " + fullNumber + "\nEnter any 6-digit code to continue.");
+          alert("Demo Mode: Enter any 6-digit OTP");
           loginCard.style.display = 'none';
           otpCard.style.display = 'block';
           return;
@@ -268,49 +230,32 @@
         try {
           const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
           confirmationResult = await signInWithPhoneNumber(auth, fullNumber, recaptchaVerifier);
-          alert("OTP sent successfully!");
+          alert("OTP sent!");
           loginCard.style.display = 'none';
           otpCard.style.display = 'block';
-        } catch (error) {
-          let errorMsg = error.message;
-          if (error.code === 'auth/api-key-not-valid') {
-            errorMsg = "Firebase API Key not configured. Please replace the firebaseConfig with your actual credentials from Firebase Console.";
-          }
-          alert("Error: " + errorMsg);
-        } finally {
-          showLoader(sendOtpBtn, false, "Send OTP");
-        }
+        } catch (error) { alert("Error: " + error.message); }
+        finally { showLoader(sendOtpBtn, false, "Send OTP"); }
       });
     }
     
-    // Create Account
     if (createAccountBtn) {
       createAccountBtn.addEventListener('click', async () => {
         const name = nameInput.value.trim();
         const city = cityInput.value.trim();
         const dob = dobInput.value.trim();
-        if (!name || !city || !dob) {
-          alert("Please fill all fields");
-          return;
-        }
+        if (!name || !city || !dob) { alert("Please fill all fields"); return; }
         
-        if (!firebaseInitialized) {
-          demoCreateAccount(name, city, dob);
-          return;
-        }
+        if (!firebaseInitialized) { demoCreateAccount(name, city, dob); return; }
         
         showLoader(createAccountBtn, true, "Creating...");
         try {
           const user = auth.currentUser;
           if (!user) throw new Error("No user");
-          const userData = { name, city, dob, phone: currentPhoneNumber, createdAt: new Date().toISOString() };
+          const userData = { name, city, dob, phone: currentPhoneNumber };
           await setDoc(doc(db, "users", user.uid), userData);
           await showDashboard(user.uid, userData);
-        } catch (error) {
-          alert("Failed: " + error.message);
-        } finally {
-          showLoader(createAccountBtn, false, "Create Account");
-        }
+        } catch (error) { alert("Failed: " + error.message); }
+        finally { showLoader(createAccountBtn, false, "Create Account"); }
       });
     }
     
@@ -323,7 +268,6 @@
       });
     }
     
-    // Auth State Listener
     if (firebaseInitialized) {
       onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -332,11 +276,9 @@
           if (docSnap.exists() && dashboardContainer.style.display !== 'flex') {
             await showDashboard(user.uid, docSnap.data());
           } else if (!docSnap.exists() && authContainer.style.display !== 'none') {
-            if (loginCard.style.display !== 'none') {
-              loginCard.style.display = 'none';
-              otpCard.style.display = 'none';
-              createAccountCard.style.display = 'block';
-            }
+            loginCard.style.display = 'none';
+            otpCard.style.display = 'none';
+            createAccountCard.style.display = 'block';
           }
         } else {
           if (dashboardContainer.style.display === 'flex') dashboardContainer.style.display = 'none';
@@ -352,7 +294,6 @@
       });
     }
     
-    // Initial Splash + start auto-scroll
     setTimeout(() => {
       splashScreen.style.display = 'none';
       authContainer.style.display = 'flex';
@@ -360,14 +301,11 @@
       bindScrollEvents(autoScrollDiv);
     }, 1500);
     
-    // Restrict phone input to 10 digits only
     if (phoneInput) {
       phoneInput.addEventListener('input', function(e) {
         this.value = this.value.replace(/\D/g, '').slice(0, 10);
       });
     }
-    
-    // OTP input restrict to 6 digits
     if (otpInput) {
       otpInput.addEventListener('input', function(e) {
         this.value = this.value.replace(/\D/g, '').slice(0, 6);
@@ -392,7 +330,6 @@
       min-height: 100vh;
     }
     
-    /* Mobile container like Android app */
     .app-container {
       width: 100%;
       max-width: 450px;
@@ -403,10 +340,9 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      border-radius: 0;
     }
     
-    /* Splash Screen with animation */
+    /* Splash Screen */
     #splash-screen {
       position: absolute;
       top: 0;
@@ -431,7 +367,6 @@
       font-size: 3.2rem;
       font-weight: 800;
       letter-spacing: 2px;
-      text-shadow: 0 4px 15px rgba(0,0,0,0.2);
       animation: bounceText 0.6s ease-out;
     }
     
@@ -441,7 +376,7 @@
       100% { transform: scale(1); opacity: 1; }
     }
     
-    /* Auth Container - split design with blue top and UPWARD CURVE (convex top of bottom section) */
+    /* Auth Container */
     #auth-container {
       display: none;
       flex-direction: column;
@@ -450,132 +385,80 @@
       background: #ffffff;
     }
     
-    /* Top half - Blue Gradient Background with curved bottom */
+    /* Top half - Blue background, KRISHNA at very top */
     .top-half-blue {
-      flex: 0 0 50%;
+      flex: 0 0 45%;
       background: linear-gradient(145deg, #1e4b8f, #0d355c);
       position: relative;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      padding: 20px 20px 30px 20px;
       z-index: 2;
     }
     
-    /* UPWARD CURVE - convex curve at the TOP of bottom section (looks like upside-down curve) */
-    /* Using a pseudo-element on the bottom section to create upward curve */
-    .bottom-half-scroll {
-      flex: 1;
-      overflow: hidden;
-      background: #f1f5f9;
-      position: relative;
-      border-top-left-radius: 40px;
-      border-top-right-radius: 40px;
-      margin-top: -8px;
-      z-index: 1;
-    }
-    
-    /* Shadow and inner curve effect */
-    .bottom-half-scroll::before {
-      content: '';
-      position: absolute;
-      top: -25px;
-      left: 0;
-      width: 100%;
-      height: 35px;
-      background: #f1f5f9;
-      border-radius: 50% 50% 0 0;
-      z-index: 2;
-      box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
-    }
-    
-    /* Animated KRISHNA name top center */
-    .brand-animation {
+    /* KRISHNA headline at top with reduced top space */
+    .headline-top {
       text-align: center;
+      margin-top: 5px;
       margin-bottom: 20px;
     }
-    .brand-name {
-      font-size: 2.5rem;
+    .brand-name-main {
+      font-size: 2.8rem;
       font-weight: 800;
       color: white;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      letter-spacing: 3px;
+      text-shadow: 0 2px 15px rgba(0,0,0,0.3);
+      letter-spacing: 4px;
       animation: glowPulse 1.8s infinite ease-in-out;
     }
     @keyframes glowPulse {
       0% { text-shadow: 0 0 0px rgba(255,255,200,0.5); transform: scale(1);}
-      50% { text-shadow: 0 0 12px rgba(255,245,150,0.9); transform: scale(1.02);}
+      50% { text-shadow: 0 0 15px rgba(255,245,150,0.9); transform: scale(1.02);}
       100% { text-shadow: 0 0 0px rgba(255,255,200,0.5); transform: scale(1);}
     }
-    .sub-brand {
-      font-size: 0.75rem;
+    .sub-brand-main {
+      font-size: 0.7rem;
       color: rgba(255,255,255,0.8);
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+      margin-top: 4px;
     }
     
-    /* Cards Container Inside Top Half */
+    /* Form Card Wrapper */
     .form-card-wrapper {
       width: 100%;
-      max-width: 320px;
+      max-width: 300px;
       margin: 0 auto;
     }
     .card-glass {
-      background: rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.96);
       border-radius: 32px;
-      padding: 20px 18px;
-      box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-      backdrop-filter: blur(2px);
-    }
-    .card-glass h3 {
-      font-size: 1.4rem;
-      color: #0d355c;
-      margin-bottom: 6px;
-      text-align: center;
+      padding: 18px 16px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
     }
     .input-group {
-      margin-bottom: 15px;
-    }
-    .input-group label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #334155;
-      display: block;
-      margin-bottom: 5px;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 28px;
-      font-size: 0.95rem;
-      background: white;
-    }
-    .input-group input:focus {
-      outline: none;
-      border-color: #1e4b8f;
-      box-shadow: 0 0 0 3px rgba(30,75,143,0.2);
+      margin-bottom: 14px;
     }
     .phone-prefix-wrapper {
       display: flex;
       align-items: center;
       background: white;
-      border-radius: 28px;
+      border-radius: 30px;
       border: 1px solid #cbd5e1;
+      overflow: hidden;
     }
     .phone-prefix {
       padding-left: 16px;
       font-weight: bold;
       background: #f1f5f9;
-      border-radius: 28px 0 0 28px;
       padding: 12px 10px;
       color: #1e4b8f;
+      font-size: 0.9rem;
     }
     .phone-prefix-wrapper input {
       border: none;
       flex: 1;
-      border-radius: 28px;
       padding: 12px 14px;
+      font-size: 0.95rem;
+      outline: none;
     }
     .btn-primary {
       background: #0d355c;
@@ -588,16 +471,42 @@
       font-size: 1rem;
       cursor: pointer;
       transition: 0.2s;
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .btn-primary:active { transform: scale(0.97); background: #1e4b8f;}
     .text-link {
       text-align: center;
-      margin-top: 16px;
+      margin-top: 14px;
       font-size: 0.8rem;
       color: #0d355c;
       font-weight: 500;
       cursor: pointer;
+    }
+    
+    /* Bottom half with UPWARD CURVE (convex at top) - like the image */
+    .bottom-half-scroll {
+      flex: 1;
+      overflow: hidden;
+      background: #f1f5f9;
+      position: relative;
+      border-top-left-radius: 45px;
+      border-top-right-radius: 45px;
+      margin-top: -12px;
+      z-index: 1;
+    }
+    
+    /* The upward curve effect */
+    .bottom-half-scroll::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      left: 0;
+      width: 100%;
+      height: 45px;
+      background: #f1f5f9;
+      border-radius: 50% 50% 0 0;
+      z-index: 2;
+      box-shadow: 0 -8px 20px rgba(0,0,0,0.08);
     }
     
     /* Scroll container */
@@ -605,22 +514,36 @@
       height: 100%;
       overflow-y: auto;
       scroll-behavior: smooth;
-      padding: 20px 12px 16px 12px;
+      padding: 25px 14px 16px 14px;
       scrollbar-width: thin;
     }
     .scroll-container::-webkit-scrollbar {
-      width: 3px;
+      width: 2px;
     }
+    
+    /* Market Cards with vibration animation */
     .market-card {
       background: white;
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 14px 16px;
       margin-bottom: 12px;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
       border: 1px solid #e2e8f0;
-      transition: all 0.1s;
+      transition: all 0.05s ease;
+      animation: cardGlow 2s infinite alternate;
     }
+    
+    @keyframes cardGlow {
+      0% { box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+      100% { box-shadow: 0 5px 18px rgba(37,99,235,0.15); }
+    }
+    
+    /* Vibration class for dynamic effect */
+    .vibrate-on-scroll {
+      transition: transform 0.03s linear;
+    }
+    
     .market-name {
       font-weight: 800;
       font-size: 1.2rem;
@@ -635,10 +558,10 @@
       color: #2563eb;
       text-align: center;
       margin-top: 6px;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
     }
     
-    /* Dashboard style - similar split with blue gradient and upward curve */
+    /* Dashboard styles with same curve */
     #dashboard-container {
       display: none;
       flex-direction: column;
@@ -646,51 +569,50 @@
       background: #f1f5f9;
     }
     .dashboard-top-blue {
-      flex: 0 0 45%;
+      flex: 0 0 42%;
       background: linear-gradient(145deg, #1e4b8f, #0d355c);
-      padding: 32px 24px;
+      padding: 28px 24px 20px 24px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       color: white;
     }
     .welcome-text {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 700;
       animation: fadeSlide 0.5s ease;
     }
     @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .city-dob-text {
       margin-top: 8px;
       opacity: 0.85;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
     .dashboard-bottom-scroll {
       flex: 1;
       overflow: hidden;
-      padding: 0;
       position: relative;
-      border-top-left-radius: 40px;
-      border-top-right-radius: 40px;
-      margin-top: -8px;
+      border-top-left-radius: 45px;
+      border-top-right-radius: 45px;
+      margin-top: -12px;
       background: #f1f5f9;
     }
     .dashboard-bottom-scroll::before {
       content: '';
       position: absolute;
-      top: -25px;
+      top: -30px;
       left: 0;
       width: 100%;
-      height: 35px;
+      height: 45px;
       background: #f1f5f9;
       border-radius: 50% 50% 0 0;
       z-index: 2;
     }
     .dashboard-bottom-scroll .scroll-container {
-      padding-top: 20px;
+      padding-top: 25px;
     }
     
     .spinner {
@@ -704,22 +626,34 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    /* Demo mode badge */
-    .demo-badge {
-      position: fixed;
-      bottom: 5px;
-      right: 5px;
-      font-size: 9px;
-      color: #888;
-      background: rgba(0,0,0,0.5);
-      padding: 2px 6px;
-      border-radius: 10px;
-      z-index: 999;
+    /* OTP/Create Account card styles */
+    .card-glass h3 {
+      font-size: 1.3rem;
+      color: #0d355c;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .input-group label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #334155;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 28px;
+      font-size: 0.9rem;
+      background: white;
     }
     
     @media (max-width: 480px) {
-      .brand-name { font-size: 2rem; }
-      .card-glass { padding: 16px; }
+      .brand-name-main { font-size: 2.3rem; }
+      .market-digits { font-size: 1.1rem; }
+      .card-glass { padding: 14px; }
+      .top-half-blue { padding: 15px 20px 25px 20px; }
     }
   </style>
 </head>
@@ -728,23 +662,21 @@
   <!-- Splash Screen -->
   <div id="splash-screen">
     <div class="splash-title">KRISHNA</div>
-    <div style="margin-top: 10px; font-size: 0.9rem;">MATKA RESULTS</div>
+    <div style="margin-top: 8px; font-size: 0.8rem;">MATKA RESULTS</div>
   </div>
   
-  <!-- Authentication Container: Blue top half + scrolling bottom with UPWARD CURVE -->
+  <!-- Authentication Container -->
   <div id="auth-container">
-    <!-- Top half: Blue background, KRISHNA animation + forms -->
+    <!-- Top half: Blue background, KRISHNA at very top with reduced spacing -->
     <div class="top-half-blue">
-      <div class="brand-animation">
-        <div class="brand-name">KRISHNA</div>
-        <div class="sub-brand">OFFICIAL MATKA</div>
+      <div class="headline-top">
+        <div class="brand-name-main">KRISHNA</div>
+        <div class="sub-brand-main">OFFICIAL MATKA</div>
       </div>
       <div class="form-card-wrapper">
-        <!-- Login Card (Phone input) -->
+        <!-- Login Card (Phone input) - NO "Mobile Login" text, NO "+91 auto" text -->
         <div id="login-card" class="card-glass">
-          <h3>Mobile Login</h3>
           <div class="input-group">
-            <label>📞 Phone Number (+91 auto)</label>
             <div class="phone-prefix-wrapper">
               <span class="phone-prefix">+91</span>
               <input type="tel" id="phone-number" placeholder="9876543210" maxlength="10" inputmode="numeric">
@@ -757,8 +689,7 @@
         <div id="otp-card" class="card-glass" style="display: none;">
           <h3>Verify OTP</h3>
           <div class="input-group">
-            <label>🔐 6-digit Code</label>
-            <input type="text" id="otp-code" placeholder="123456" maxlength="6" inputmode="numeric">
+            <input type="text" id="otp-code" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric">
           </div>
           <button id="verify-otp-btn" class="btn-primary">Verify & Login</button>
         </div>
@@ -766,22 +697,22 @@
         <!-- Create Account Card -->
         <div id="create-account-card" class="card-glass" style="display: none;">
           <h3>Create Account</h3>
-          <div class="input-group"><label>Full Name</label><input type="text" id="full-name" placeholder="Krishna Kumar"></div>
-          <div class="input-group"><label>City</label><input type="text" id="city" placeholder="Mumbai"></div>
-          <div class="input-group"><label>Date of Birth</label><input type="date" id="dob"></div>
+          <div class="input-group"><input type="text" id="full-name" placeholder="Full Name"></div>
+          <div class="input-group"><input type="text" id="city" placeholder="City"></div>
+          <div class="input-group"><input type="date" id="dob" placeholder="Date of Birth"></div>
           <button id="create-account-btn" class="btn-primary">Complete Signup</button>
           <div id="back-to-login" class="text-link">← Back to Login</div>
         </div>
       </div>
     </div>
     
-    <!-- Bottom half: AUTO SCROLLING MARKET RESULTS with UPWARD CURVE (convex top) -->
+    <!-- Bottom half: Auto scrolling markets with upward curve -->
     <div class="bottom-half-scroll">
       <div id="auto-scroll-markets" class="scroll-container"></div>
     </div>
   </div>
   
-  <!-- Dashboard Container (after login) -->
+  <!-- Dashboard Container -->
   <div id="dashboard-container">
     <div class="dashboard-top-blue">
       <div class="welcome-text" id="user-welcome">Welcome, KRISHNA</div>
@@ -792,7 +723,6 @@
     </div>
   </div>
   <div id="recaptcha-container"></div>
-  <div class="demo-badge">⚡ MATKA APP</div>
 </div>
 </body>
 </html>
