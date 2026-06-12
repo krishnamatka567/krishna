@@ -71,12 +71,12 @@
     
     function buildMarketHTML() {
       let html = '';
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 8; i++) {
         marketItems.forEach(item => {
           html += `
-            <div class="market-card vibrate-on-scroll">
-              <div class="market-name">${item.name}</div>
+            <div class="market-card">
               <div class="market-digits">${item.digits}</div>
+              <div class="market-name">${item.name}</div>
             </div>
           `;
         });
@@ -84,24 +84,19 @@
       return html;
     }
     
-    // Smooth auto-scrolling with vibration effect
+    // Smooth auto-scrolling with gentle vibration
     let scrollInterval = null;
     let currentScrollTop = 0;
     let isScrolling = true;
-    let lastVibrateTime = 0;
     
-    function triggerVibration() {
-      const now = Date.now();
-      if (now - lastVibrateTime > 150) {
-        lastVibrateTime = now;
-        const cards = document.querySelectorAll('.market-card');
-        cards.forEach((card, index) => {
-          if (Math.random() > 0.6) {
-            card.style.transform = 'translateX(3px)';
-            setTimeout(() => { if(card) card.style.transform = ''; }, 60);
-          }
-        });
-      }
+    function triggerGentleVibration() {
+      const cards = document.querySelectorAll('.market-card');
+      cards.forEach((card, index) => {
+        if (Math.random() > 0.85) {
+          card.style.transform = 'translateY(2px)';
+          setTimeout(() => { if(card) card.style.transform = ''; }, 50);
+        }
+      });
     }
     
     function startAutoScroll(container) {
@@ -119,28 +114,21 @@
         if (currentScrollTop >= maxScroll) {
           currentScrollTop = 0;
           container.scrollTop = 0;
-          triggerVibration();
+          triggerGentleVibration();
         } else {
-          currentScrollTop += 0.6;
+          currentScrollTop += 0.5;
           container.scrollTop = currentScrollTop;
-          if (Math.random() > 0.92) triggerVibration();
+          if (Math.random() > 0.96) triggerGentleVibration();
         }
-      }, 25);
-    }
-    
-    function stopAutoScroll() {
-      if (scrollInterval) {
-        clearInterval(scrollInterval);
-        scrollInterval = null;
-      }
+      }, 30);
     }
     
     function bindScrollEvents(container) {
       if (!container) return;
       container.addEventListener('touchstart', () => { isScrolling = false; });
-      container.addEventListener('touchend', () => { setTimeout(() => { isScrolling = true; }, 2000); });
+      container.addEventListener('touchend', () => { setTimeout(() => { isScrolling = true; }, 2500); });
       container.addEventListener('mousedown', () => { isScrolling = false; });
-      container.addEventListener('mouseup', () => { setTimeout(() => { isScrolling = true; }, 2000); });
+      container.addEventListener('mouseup', () => { setTimeout(() => { isScrolling = true; }, 2500); });
     }
     
     function showLoader(btn, isLoading, originalText) {
@@ -322,7 +310,7 @@
     }
     
     body {
-      font-family: 'Segoe UI', 'Poppins', 'Roboto', sans-serif;
+      font-family: 'Segoe UI', 'Poppins', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
       background: #0a0c10;
       display: flex;
       justify-content: center;
@@ -349,14 +337,14 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #0b3b5f, #1b4f8b);
+      background: linear-gradient(135deg, #1a4a7a, #0e2f4f);
       z-index: 200;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
       color: white;
-      animation: fadeOut 0.8s ease-in-out 1.2s forwards;
+      animation: fadeOut 0.6s ease-in-out 1.2s forwards;
     }
     
     @keyframes fadeOut {
@@ -364,15 +352,15 @@
     }
     
     .splash-title {
-      font-size: 3.2rem;
+      font-size: 3rem;
       font-weight: 800;
-      letter-spacing: 2px;
-      animation: bounceText 0.6s ease-out;
+      letter-spacing: 3px;
+      animation: bounceText 0.5s ease-out;
     }
     
     @keyframes bounceText {
       0% { transform: scale(0.8); opacity: 0; }
-      80% { transform: scale(1.1); }
+      70% { transform: scale(1.05); }
       100% { transform: scale(1); opacity: 1; }
     }
     
@@ -385,163 +373,131 @@
       background: #ffffff;
     }
     
-    /* Top half - Blue background, KRISHNA at top */
-    .top-half-blue {
-      flex: 0 0 48%;
-      background: linear-gradient(145deg, #1e4b8f, #0d355c);
+    /* Top section - Blue gradient */
+    .top-section {
+      background: linear-gradient(145deg, #1a4f8b, #0d355c);
+      padding: 20px 24px 35px 24px;
       position: relative;
-      display: flex;
-      flex-direction: column;
-      padding: 15px 20px 25px 20px;
       z-index: 2;
     }
     
-    /* KRISHNA headline at top */
-    .headline-top {
+    /* KRISHNA Headline */
+    .brand-headline {
       text-align: center;
-      margin-top: 8px;
-      margin-bottom: 15px;
+      margin-bottom: 24px;
     }
-    .brand-name-main {
-      font-size: 2.6rem;
+    .brand-name {
+      font-size: 2.8rem;
       font-weight: 800;
       color: white;
-      text-shadow: 0 2px 15px rgba(0,0,0,0.3);
-      letter-spacing: 4px;
-      animation: glowPulse 1.8s infinite ease-in-out;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.25);
+      letter-spacing: 3px;
+      animation: gentleGlow 2s infinite ease-in-out;
     }
-    @keyframes glowPulse {
-      0% { text-shadow: 0 0 0px rgba(255,255,200,0.5); transform: scale(1);}
-      50% { text-shadow: 0 0 15px rgba(255,245,150,0.9); transform: scale(1.02);}
-      100% { text-shadow: 0 0 0px rgba(255,255,200,0.5); transform: scale(1);}
+    @keyframes gentleGlow {
+      0%, 100% { text-shadow: 0 3px 12px rgba(0,0,0,0.25); }
+      50% { text-shadow: 0 3px 18px rgba(255,220,100,0.5); }
     }
-    .sub-brand-main {
+    .brand-sub {
       font-size: 0.7rem;
       color: rgba(255,255,255,0.8);
       letter-spacing: 2px;
-      margin-top: 4px;
+      margin-top: 5px;
     }
     
-    /* Form Card Wrapper */
-    .form-card-wrapper {
-      width: 100%;
+    /* Login Form Card */
+    .form-container {
       max-width: 300px;
       margin: 0 auto;
     }
-    .card-glass {
-      background: rgba(255,255,255,0.96);
-      border-radius: 32px;
-      padding: 18px 16px;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    .login-card {
+      background: white;
+      border-radius: 36px;
+      padding: 20px 18px;
+      box-shadow: 0 18px 35px rgba(0,0,0,0.2);
     }
-    .input-group {
-      margin-bottom: 14px;
-    }
-    .phone-prefix-wrapper {
+    .phone-wrapper {
       display: flex;
       align-items: center;
-      background: white;
-      border-radius: 30px;
-      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      border-radius: 32px;
+      border: 1.5px solid #e2e8f0;
       overflow: hidden;
+      transition: border-color 0.2s;
     }
-    .phone-prefix {
-      padding-left: 16px;
-      font-weight: bold;
+    .phone-wrapper:focus-within {
+      border-color: #1a4f8b;
+    }
+    .country-code {
+      padding: 14px 12px;
+      font-weight: 700;
       background: #f1f5f9;
-      padding: 12px 10px;
-      color: #1e4b8f;
-      font-size: 0.9rem;
+      color: #1a4f8b;
+      font-size: 1rem;
     }
-    .phone-prefix-wrapper input {
+    .phone-wrapper input {
       border: none;
       flex: 1;
-      padding: 12px 14px;
-      font-size: 0.95rem;
+      padding: 14px 12px;
+      font-size: 1rem;
+      background: #f8fafc;
       outline: none;
     }
-    .btn-primary {
+    .send-otp-btn {
       background: #0d355c;
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       border: none;
       border-radius: 40px;
       color: white;
-      font-weight: bold;
+      font-weight: 700;
       font-size: 1rem;
       cursor: pointer;
-      transition: 0.2s;
-      margin-top: 6px;
+      margin-top: 18px;
+      transition: all 0.2s;
     }
-    .btn-primary:active { transform: scale(0.97); background: #1e4b8f;}
-    .text-link {
-      text-align: center;
-      margin-top: 14px;
-      font-size: 0.8rem;
-      color: #0d355c;
-      font-weight: 500;
-      cursor: pointer;
-    }
+    .send-otp-btn:active { transform: scale(0.97); background: #1a4f8b; }
     
-    /* ============================================ */
-    /* MIDDLE BLUE CURVE - EXACTLY LIKE REFERENCE IMAGE */
-    /* ============================================ */
-    .curve-container {
+    /* ========== PERFECT MIDDLE CURVE ========== */
+    .curve-wrapper {
       position: relative;
       background: #f1f5f9;
-      height: 35px;
+      height: 32px;
       margin-top: -8px;
       z-index: 5;
     }
     
-    .blue-curve {
+    .perfect-curve {
       position: absolute;
-      top: -25px;
+      top: -32px;
       left: 0;
       width: 100%;
-      height: 50px;
+      height: 48px;
       background: #f1f5f9;
-      border-radius: 50% 50% 0 0;
-      z-index: 3;
+      border-radius: 0 0 50% 50%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
     
-    /* Alternative approach: curve that looks like the image */
-    .bottom-half-scroll {
+    /* Alternative for bottom section */
+    .bottom-scroll-area {
       flex: 1;
       overflow: hidden;
       background: #f1f5f9;
       position: relative;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      margin-top: 0;
-      z-index: 1;
     }
     
-    /* The upward curve effect - like the blue curve in your image */
-    .bottom-half-scroll::before {
+    /* Make the curve visible and elegant */
+    .bottom-scroll-area::before {
       content: '';
       position: absolute;
       top: -28px;
       left: 0;
       width: 100%;
-      height: 45px;
+      height: 42px;
       background: #f1f5f9;
       border-radius: 50% 50% 0 0;
-      z-index: 2;
-      box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
-    }
-    
-    /* Extra decorative curve line to match image style */
-    .curve-accent {
-      position: absolute;
-      top: -30px;
-      left: 0;
-      width: 100%;
-      height: 8px;
-      background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
-      border-radius: 10px 10px 0 0;
       z-index: 3;
-      opacity: 0.5;
+      box-shadow: 0 -6px 12px rgba(0,0,0,0.03);
     }
     
     /* Scroll container */
@@ -549,110 +505,147 @@
       height: 100%;
       overflow-y: auto;
       scroll-behavior: smooth;
-      padding: 28px 14px 16px 14px;
+      padding: 30px 16px 20px 16px;
       scrollbar-width: thin;
     }
     .scroll-container::-webkit-scrollbar {
       width: 2px;
     }
+    .scroll-container::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 10px;
+    }
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: #1a4f8b;
+      border-radius: 10px;
+    }
     
-    /* Market Cards with vibration animation */
+    /* Market Cards - Beautiful Design */
     .market-card {
       background: white;
-      border-radius: 22px;
-      padding: 14px 16px;
-      margin-bottom: 12px;
+      border-radius: 24px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
       text-align: center;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-      border: 1px solid #e2e8f0;
-      transition: all 0.05s ease;
-      animation: cardGlow 2s infinite alternate;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid rgba(26,79,139,0.1);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .market-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(26,79,139,0.12);
     }
     
-    @keyframes cardGlow {
-      0% { box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
-      100% { box-shadow: 0 5px 18px rgba(37,99,235,0.15); }
-    }
-    
-    .vibrate-on-scroll {
-      transition: transform 0.03s linear;
-    }
-    
-    .market-name {
-      font-weight: 800;
-      font-size: 1.2rem;
-      color: #0f172a;
-      text-align: center;
-      letter-spacing: 1px;
-    }
     .market-digits {
-      font-family: 'Courier New', monospace;
-      font-size: 1.35rem;
+      font-family: 'Courier New', 'SF Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #1a4f8b;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+    .market-name {
       font-weight: 700;
-      color: #2563eb;
-      text-align: center;
-      margin-top: 6px;
-      letter-spacing: 2px;
+      font-size: 1rem;
+      color: #475569;
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
     
-    /* Dashboard styles with same curve */
+    /* Dashboard Styles */
     #dashboard-container {
       display: none;
       flex-direction: column;
       height: 100%;
       background: #f1f5f9;
     }
-    .dashboard-top-blue {
-      flex: 0 0 45%;
-      background: linear-gradient(145deg, #1e4b8f, #0d355c);
-      padding: 25px 24px 20px 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    .dashboard-top {
+      background: linear-gradient(145deg, #1a4f8b, #0d355c);
+      padding: 28px 24px 32px 24px;
       color: white;
     }
     .welcome-text {
       font-size: 1.6rem;
       font-weight: 700;
-      animation: fadeSlide 0.5s ease;
+      margin-bottom: 8px;
     }
-    @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .city-dob-text {
-      margin-top: 8px;
-      opacity: 0.85;
+    .city-dob {
       font-size: 0.85rem;
+      opacity: 0.85;
     }
-    .dashboard-bottom-scroll {
+    .dashboard-bottom {
       flex: 1;
       overflow: hidden;
       position: relative;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      margin-top: 0;
-      background: #f1f5f9;
     }
-    .dashboard-bottom-scroll::before {
+    .dashboard-bottom::before {
       content: '';
       position: absolute;
       top: -28px;
       left: 0;
       width: 100%;
-      height: 45px;
+      height: 42px;
       background: #f1f5f9;
       border-radius: 50% 50% 0 0;
       z-index: 2;
     }
-    .dashboard-bottom-scroll .scroll-container {
-      padding-top: 28px;
+    .dashboard-bottom .scroll-container {
+      padding-top: 30px;
+    }
+    
+    /* OTP & Create Account Cards */
+    .otp-card, .create-card {
+      background: white;
+      border-radius: 36px;
+      padding: 24px 20px;
+      box-shadow: 0 18px 35px rgba(0,0,0,0.2);
+    }
+    .otp-card h3, .create-card h3 {
+      color: #0d355c;
+      font-size: 1.4rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .otp-card input, .create-card input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 32px;
+      font-size: 1rem;
+      margin-bottom: 16px;
+      background: #f8fafc;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .otp-card input:focus, .create-card input:focus {
+      border-color: #1a4f8b;
+    }
+    .verify-btn, .create-btn {
+      background: #0d355c;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 40px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #1a4f8b;
+      font-weight: 500;
+      cursor: pointer;
     }
     
     .spinner {
       display: inline-block;
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       border: 2px solid rgba(255,255,255,0.3);
       border-radius: 50%;
       border-top-color: white;
@@ -660,34 +653,11 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    /* OTP/Create Account card styles */
-    .card-glass h3 {
-      font-size: 1.3rem;
-      color: #0d355c;
-      margin-bottom: 12px;
-      text-align: center;
-    }
-    .input-group label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #334155;
-      display: block;
-      margin-bottom: 4px;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 28px;
-      font-size: 0.9rem;
-      background: white;
-    }
-    
     @media (max-width: 480px) {
-      .brand-name-main { font-size: 2.3rem; }
-      .market-digits { font-size: 1.1rem; }
-      .card-glass { padding: 14px; }
-      .top-half-blue { padding: 12px 20px 20px 20px; }
+      .brand-name { font-size: 2.3rem; }
+      .market-digits { font-size: 1.3rem; }
+      .top-section { padding: 15px 20px 30px 20px; }
+      .login-card { padding: 16px; }
     }
   </style>
 </head>
@@ -696,69 +666,64 @@
   <!-- Splash Screen -->
   <div id="splash-screen">
     <div class="splash-title">KRISHNA</div>
-    <div style="margin-top: 8px; font-size: 0.8rem;">MATKA RESULTS</div>
+    <div style="margin-top: 8px; font-size: 0.75rem; opacity: 0.8;">MATKA RESULTS</div>
   </div>
   
   <!-- Authentication Container -->
   <div id="auth-container">
-    <!-- Top half: Blue background, KRISHNA at very top -->
-    <div class="top-half-blue">
-      <div class="headline-top">
-        <div class="brand-name-main">KRISHNA</div>
-        <div class="sub-brand-main">OFFICIAL MATKA</div>
+    <!-- Top Blue Section -->
+    <div class="top-section">
+      <div class="brand-headline">
+        <div class="brand-name">KRISHNA</div>
+        <div class="brand-sub">OFFICIAL MATKA</div>
       </div>
-      <div class="form-card-wrapper">
-        <!-- Login Card - Clean without extra labels -->
-        <div id="login-card" class="card-glass">
-          <div class="input-group">
-            <div class="phone-prefix-wrapper">
-              <span class="phone-prefix">+91</span>
-              <input type="tel" id="phone-number" placeholder="9876543210" maxlength="10" inputmode="numeric">
-            </div>
+      <div class="form-container">
+        <!-- Login Card -->
+        <div id="login-card" class="login-card">
+          <div class="phone-wrapper">
+            <span class="country-code">+91</span>
+            <input type="tel" id="phone-number" placeholder="9876543210" maxlength="10" inputmode="numeric">
           </div>
-          <button id="send-otp-btn" class="btn-primary">Send OTP</button>
+          <button id="send-otp-btn" class="send-otp-btn">Send OTP</button>
         </div>
         
         <!-- OTP Card -->
-        <div id="otp-card" class="card-glass" style="display: none;">
+        <div id="otp-card" class="otp-card" style="display: none;">
           <h3>Verify OTP</h3>
-          <div class="input-group">
-            <input type="text" id="otp-code" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric">
-          </div>
-          <button id="verify-otp-btn" class="btn-primary">Verify & Login</button>
+          <input type="text" id="otp-code" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric">
+          <button id="verify-otp-btn" class="verify-btn">Verify & Login</button>
         </div>
         
         <!-- Create Account Card -->
-        <div id="create-account-card" class="card-glass" style="display: none;">
+        <div id="create-account-card" class="create-card" style="display: none;">
           <h3>Create Account</h3>
-          <div class="input-group"><input type="text" id="full-name" placeholder="Full Name"></div>
-          <div class="input-group"><input type="text" id="city" placeholder="City"></div>
-          <div class="input-group"><input type="date" id="dob" placeholder="Date of Birth"></div>
-          <button id="create-account-btn" class="btn-primary">Complete Signup</button>
-          <div id="back-to-login" class="text-link">← Back to Login</div>
+          <input type="text" id="full-name" placeholder="Full Name">
+          <input type="text" id="city" placeholder="City">
+          <input type="date" id="dob" placeholder="Date of Birth">
+          <button id="create-account-btn" class="create-btn">Complete Signup</button>
+          <div id="back-to-login" class="back-link">← Back to Login</div>
         </div>
       </div>
     </div>
     
-    <!-- Blue Curve Accent - exactly like reference image -->
-    <div class="curve-container">
-      <div class="blue-curve"></div>
-      <div class="curve-accent"></div>
+    <!-- PERFECT MIDDLE CURVE -->
+    <div class="curve-wrapper">
+      <div class="perfect-curve"></div>
     </div>
     
-    <!-- Bottom half: Auto scrolling markets -->
-    <div class="bottom-half-scroll">
+    <!-- Bottom Scrolling Markets -->
+    <div class="bottom-scroll-area">
       <div id="auto-scroll-markets" class="scroll-container"></div>
     </div>
   </div>
   
   <!-- Dashboard Container -->
   <div id="dashboard-container">
-    <div class="dashboard-top-blue">
+    <div class="dashboard-top">
       <div class="welcome-text" id="user-welcome">Welcome, KRISHNA</div>
-      <div class="city-dob-text" id="user-city-dob">City • DOB</div>
+      <div class="city-dob" id="user-city-dob">City • Date of Birth</div>
     </div>
-    <div class="dashboard-bottom-scroll">
+    <div class="dashboard-bottom">
       <div id="auto-scroll-markets-dashboard" class="scroll-container"></div>
     </div>
   </div>
