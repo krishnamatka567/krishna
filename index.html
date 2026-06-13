@@ -1,719 +1,339 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <title>KRISHNA • Sattam Bazar</title>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <!-- Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRISHNA</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-    body {
-      background: #0A0F1E;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Inter', sans-serif;
-      padding: 12px;
-    }
-
-    /* Android App Card with fixed split background */
-    .android-card {
-      width: 100%;
-      max-width: 390px;
-      height: 780px;
-      background: transparent;
-      border-radius: 48px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 30px 40px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* TOP HALF — BLUE BACKGROUND (FIXED) */
-    .top-half-blue {
-      background: linear-gradient(145deg, #1E3A8A, #0F2B6D);
-      height: 50%;
-      flex-shrink: 0;
-      position: relative;
-      border-radius: 0 0 32px 32px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      padding: 20px 20px 0 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      z-index: 2;
-    }
-
-    /* BOTTOM HALF — WHITE BACKGROUND (SCROLLABLE) */
-    .bottom-half-white {
-      background: #F8FAFF;
-      flex: 1;
-      border-radius: 32px 32px 0 0;
-      margin-top: -24px;
-      padding: 24px 18px 20px 18px;
-      overflow-y: auto;
-      z-index: 3;
-      box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
-    }
-
-    .bottom-half-white::-webkit-scrollbar {
-      width: 4px;
-    }
-    .bottom-half-white::-webkit-scrollbar-track {
-      background: #E2E8F0;
-      border-radius: 10px;
-    }
-    .bottom-half-white::-webkit-scrollbar-thumb {
-      background: #3B82F6;
-      border-radius: 10px;
-    }
-
-    /* STYLISH KRISHNA FONT - Playfair + animation */
-    @keyframes dropLand {
-      0% {
-        opacity: 0;
-        transform: translateY(-180px) scale(0.9);
-        filter: blur(8px);
-      }
-      60% {
-        opacity: 1;
-        transform: translateY(8px) scale(1.02);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-      }
-    }
-
-    @keyframes gentleGlow {
-      0% { text-shadow: 0 0 0px rgba(255, 200, 100, 0.3); letter-spacing: -0.5px; }
-      50% { text-shadow: 0 0 18px rgba(255, 180, 71, 0.7), 0 2px 10px rgba(0,0,0,0.2); letter-spacing: 1.5px; }
-      100% { text-shadow: 0 0 0px rgba(255, 200, 100, 0.3); letter-spacing: -0.5px; }
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -200% center; }
-      100% { background-position: 200% center; }
-    }
-
-    .krishna-stylish {
-      font-family: 'Playfair Display', serif;
-      font-size: 56px;
-      font-weight: 900;
-      background: linear-gradient(135deg, #FFE6B0, #FFB347, #FF8C42, #FFD966);
-      background-size: 300% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-align: center;
-      letter-spacing: 2px;
-      animation: dropLand 0.8s cubic-bezier(0.34, 1.2, 0.64, 1), gentleGlow 3s ease-in-out infinite, shimmer 4s linear infinite;
-      margin-top: 8px;
-      transform-origin: center;
-    }
-
-    /* Input fields */
-    .input-field {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(8px);
-      border-radius: 44px;
-      padding: 6px 18px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 16px 0 12px 0;
-      border: 1px solid rgba(255,255,255,0.3);
-    }
-    .input-field i {
-      color: #FFD966;
-      font-size: 18px;
-    }
-    .input-field input {
-      background: transparent;
-      border: none;
-      flex: 1;
-      padding: 14px 0;
-      font-size: 16px;
-      color: white;
-      outline: none;
-      font-weight: 500;
-    }
-    .input-field input::placeholder {
-      color: #CDE0FF;
-      font-weight: 400;
-    }
-    .input-field input[type="number"]::-webkit-inner-spin-button, 
-    .input-field input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .btn-gradient {
-      background: linear-gradient(95deg, #FFB347, #FF8C42);
-      border: none;
-      width: 100%;
-      padding: 14px;
-      border-radius: 60px;
-      font-weight: 700;
-      font-size: 16px;
-      color: #1E2A47;
-      margin: 8px 0;
-      cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.2);
-    }
-    .btn-gradient:active { transform: scale(0.97); }
-    .divider-light {
-      display: flex;
-      align-items: center;
-      color: #E2E8F0;
-      font-size: 12px;
-      margin: 14px 0 10px;
-    }
-    .divider-light::before, .divider-light::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid rgba(255,255,255,0.3);
-    }
-    .divider-light::before { margin-right: 12px; }
-    .divider-light::after { margin-left: 12px; }
-
-    /* MARKET VERTICAL SCROLL - Clean, no extra text */
-    .market-vertical-scroll {
-      background: #FFFFFF;
-      border-radius: 28px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-      overflow: hidden;
-      margin: 12px 0 20px;
-      border: 1px solid #EEF2F9;
-    }
-    .market-header {
-      padding: 14px 18px;
-      background: #F8FAFF;
-      font-weight: 700;
-      color: #1E293B;
-      border-bottom: 1px solid #E2E8F0;
-      font-size: 14px;
-    }
-    .v-scroll-area {
-      height: 260px;
-      overflow-y: auto;
-      padding: 8px 0;
-      scroll-behavior: smooth;
-    }
-    .v-auto-scroll {
-      animation: scrollUpSlow 28s linear infinite;
-    }
-    @keyframes scrollUpSlow {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-48%); }
-    }
-    .market-item {
-      background: #ffffff;
-      margin: 8px 16px;
-      padding: 14px 18px;
-      border-radius: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03), inset 0 0 0 1px #F0F2F8;
-    }
-    .market-left .name {
-      font-weight: 800;
-      color: #0F172A;
-      font-size: 16px;
-    }
-    .market-left .series {
-      font-size: 11px;
-      color: #5B6E8C;
-    }
-    .market-numbers {
-      font-family: 'Inter', monospace;
-      font-weight: 700;
-      background: #FEF3C7;
-      padding: 6px 14px;
-      border-radius: 40px;
-      color: #B45309;
-      font-size: 16px;
-      letter-spacing: 1px;
-    }
-    .white-card {
-      background: white;
-      border-radius: 32px;
-      padding: 18px;
-      margin: 10px 0;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-    }
-    .back-link {
-      color: #3B82F6;
-      font-weight: 600;
-      text-align: center;
-      margin-top: 12px;
-      display: block;
-    }
-    .toast-msg {
-      background: #0F172A;
-      color: #FFD966;
-      padding: 10px;
-      border-radius: 60px;
-      font-size: 13px;
-      text-align: center;
-      margin: 8px 0;
-    }
-    .hidden {
-      display: none;
-    }
-    .profile-card {
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(12px);
-      border-radius: 28px;
-      padding: 14px;
-      margin-top: 12px;
-    }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .resend-timer {
-      font-size: 13px;
-      text-align: center;
-      margin-top: 6px;
-      color: #FFE6B3;
-      cursor: pointer;
-    }
-    button:disabled {
-      opacity: 0.6;
-      transform: none;
-    }
-    /* Remove extra text inside market header icons only */
-    .market-header i {
-      margin-right: 6px;
-    }
-    .no-extra-text {
-      font-weight: 600;
-    }
-    .mobile-prefix {
-      color: #FFD966;
-      font-weight: 600;
-      font-size: 15px;
-      background: rgba(0,0,0,0.2);
-      padding: 4px 10px;
-      border-radius: 30px;
-      letter-spacing: 0.5px;
-    }
-  </style>
-</head>
-<body>
-<div class="android-card" id="appRoot">
-
-  <!-- LOGIN SCREEN -->
-  <div id="loginScreen">
-    <div class="top-half-blue">
-      <div class="krishna-stylish">KRISHNA</div>
-      <!-- Mobile input with NO visible +91 prefix text in front, but placeholder instructs user -->
-      <div class="input-field">
-        <i class="fas fa-phone-alt"></i>
-        <input type="tel" id="mobileNumber" placeholder="Enter 10 digit mobile" maxlength="10" inputmode="numeric">
-      </div>
-      <button id="sendOtpBtn" class="btn-gradient"><i class="fas fa-paper-plane"></i> Send OTP</button>
-      <div id="otpSectionLogin" class="hidden">
-        <div class="input-field">
-          <i class="fas fa-key"></i>
-          <input type="text" id="otpCode" placeholder="6-digit OTP" maxlength="6" inputmode="numeric">
-        </div>
-        <button id="verifyOtpBtn" class="btn-gradient"><i class="fas fa-check-circle"></i> Verify & Login</button>
-        <div id="resendOtpTimer" class="resend-timer">Resend OTP in 60s</div>
-      </div>
-      <div id="loginMessage" class="toast-msg hidden"></div>
-      <div class="divider-light"></div>
-    </div>
-    <div class="bottom-half-white">
-      <div class="market-vertical-scroll">
-        <div class="market-header"><i class="fas fa-chart-line"></i> LIVE UPDATES</div>
-        <div class="v-scroll-area" id="marketVerticalContainer">
-          <div id="marketVerticalInner" class="v-auto-scroll"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CREATE ACCOUNT SCREEN -->
-  <div id="createAccountScreen" class="hidden">
-    <div class="top-half-blue">
-      <div class="krishna-stylish" style="font-size: 42px;">COMPLETE</div>
-      <div class="input-field"><i class="fas fa-user"></i><input type="text" id="fullName" placeholder="Full Name"></div>
-      <div class="input-field"><i class="fas fa-city"></i><input type="text" id="cityName" placeholder="City"></div>
-      <div class="input-field"><i class="fas fa-calendar"></i><input type="date" id="dobInput" placeholder="Date of Birth"></div>
-      <button id="saveProfileBtn" class="btn-gradient"><i class="fas fa-save"></i> Create Account</button>
-      <button id="backToLoginFromCreate" style="background:transparent; color:#FFD966; margin-top:6px;">← Back to Login</button>
-    </div>
-    <div class="bottom-half-white">
-      <div class="market-vertical-scroll">
-        <div class="market-header"><i class="fas fa-chart-simple"></i> MARKET FEED</div>
-        <div class="v-scroll-area"><div id="createMarketScroll" class="v-auto-scroll"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- DASHBOARD SCREEN -->
-  <div id="dashboardScreen" class="hidden">
-    <div class="top-half-blue">
-      <div class="flex-between" style="align-items: center; margin-top: 15px;">
-        <div class="krishna-stylish" style="font-size: 34px; animation: dropLand 0.6s, gentleGlow 3s infinite, shimmer 4s linear infinite;">KRISHNA</div>
-        <button id="logoutBtnDashboard" style="background:rgba(255,255,255,0.2); padding:8px 14px; border-radius: 60px; color:white; border:none;"><i class="fas fa-sign-out-alt"></i> Exit</button>
-      </div>
-      <div class="profile-card">
-        <div style="color:white; font-weight:600; font-size:18px;"><i class="fas fa-user-circle"></i> <span id="dashboardName">User</span></div>
-        <div style="color:#E2E8F0; font-size:14px; margin-top:6px;"><i class="fas fa-map-marker-alt"></i> City: <span id="dashboardCity">—</span></div>
-        <div style="color:#E2E8F0; font-size:14px;"><i class="fas fa-gift"></i> DOB: <span id="dashboardDob">—</span></div>
-      </div>
-    </div>
-    <div class="bottom-half-white">
-      <div class="market-vertical-scroll">
-        <div class="market-header"><i class="fas fa-trophy"></i> WINNING RESULTS</div>
-        <div class="v-scroll-area"><div id="dashboardMarketScroll" class="v-auto-scroll"></div></div>
-      </div>
-      <div style="margin-top: 20px; background:#EFF6FF; border-radius: 24px; padding: 14px; text-align: center; color:#2563EB; font-size:13px;">
-        <i class="fas fa-chart-line"></i> Active member
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  // FIREBASE INIT
-  const firebaseConfig = {
-    apiKey: "AIzaSyAhMB5memk6Q4NbDX0_c-Wy5cs3Lg3yk4E",
-    authDomain: "krishna-567.firebaseapp.com",
-    projectId: "krishna-567",
-    storageBucket: "krishna-567.firebasestorage.app",
-    messagingSenderId: "1072566787782",
-    appId: "1:1072566787782:web:f5a74b482ff0477b1a81c7",
-    measurementId: "G-F7BZ275JBJ"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  // DOM elements
-  const loginScreen = document.getElementById('loginScreen');
-  const createScreen = document.getElementById('createAccountScreen');
-  const dashboardScreen = document.getElementById('dashboardScreen');
-  const sendOtpBtn = document.getElementById('sendOtpBtn');
-  const otpSection = document.getElementById('otpSectionLogin');
-  const verifyBtn = document.getElementById('verifyOtpBtn');
-  const mobileInput = document.getElementById('mobileNumber');
-  const otpInput = document.getElementById('otpCode');
-  const loginMsg = document.getElementById('loginMessage');
-  const saveProfile = document.getElementById('saveProfileBtn');
-  const fullNameInput = document.getElementById('fullName');
-  const cityInput = document.getElementById('cityName');
-  const dobInputElem = document.getElementById('dobInput');
-  const backToLoginBtn = document.getElementById('backToLoginFromCreate');
-  const logoutDashboard = document.getElementById('logoutBtnDashboard');
-  const resendTimerDiv = document.getElementById('resendOtpTimer');
-
-  // Market Data (No extra marketing text)
-  const MARKET_LIST = [
-    { name: "SRIDEVI", numbers: "124-71-560", subtitle: "Bazar" },
-    { name: "TIME BAZAR", numbers: "123-62-570", subtitle: "Day" },
-    { name: "MILAN NIGHT", numbers: "456-89-234", subtitle: "Super" },
-    { name: "RAJDHANI", numbers: "789-34-999", subtitle: "Night" },
-    { name: "KALYAN", numbers: "321-54-777", subtitle: "Open" },
-    { name: "MAIN BAZAR", numbers: "654-32-111", subtitle: "Close" },
-    { name: "SRIDEVI", numbers: "112-88-443", subtitle: "Morning" },
-    { name: "TIME BAZAR", numbers: "876-54-321", subtitle: "Gold" }
-  ];
-
-  function generateVerticalMarketHTML() {
-    let html = '';
-    for (let i = 0; i < 3; i++) {
-      MARKET_LIST.forEach(item => {
-        html += `
-          <div class="market-item">
-            <div class="market-left">
-              <div class="name">${item.name}</div>
-              <div class="series">${item.subtitle}</div>
-            </div>
-            <div class="market-numbers">${item.numbers}</div>
-          </div>
-        `;
-      });
-    }
-    return html;
-  }
-
-  function refreshAllMarkets() {
-    const marketHtml = generateVerticalMarketHTML();
-    const container1 = document.getElementById('marketVerticalInner');
-    const container2 = document.getElementById('createMarketScroll');
-    const container3 = document.getElementById('dashboardMarketScroll');
-    if (container1) container1.innerHTML = marketHtml;
-    if (container2) container2.innerHTML = marketHtml;
-    if (container3) container3.innerHTML = marketHtml;
-  }
-
-  function showToast(message, isError = false, container = loginMsg) {
-    if (container) {
-      container.innerText = message;
-      container.classList.remove('hidden');
-      container.style.background = isError ? '#7F1A1A' : '#1E293B';
-      setTimeout(() => container.classList.add('hidden'), 3000);
-    } else alert(message);
-  }
-
-  let confirmationResult = null;
-  let pendingUser = null;
-  let countdownInterval = null;
-
-  function startResendTimer() {
-    let seconds = 60;
-    if (resendTimerDiv) {
-      resendTimerDiv.style.pointerEvents = 'none';
-      resendTimerDiv.style.opacity = '0.7';
-      if (countdownInterval) clearInterval(countdownInterval);
-      countdownInterval = setInterval(() => {
-        if (seconds <= 0) {
-          clearInterval(countdownInterval);
-          resendTimerDiv.innerHTML = `<i class="fas fa-redo-alt"></i> Resend OTP`;
-          resendTimerDiv.style.pointerEvents = 'auto';
-          resendTimerDiv.style.opacity = '1';
-          resendTimerDiv.style.cursor = 'pointer';
-        } else {
-          resendTimerDiv.innerHTML = `Resend OTP in ${seconds}s`;
-          seconds--;
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212; /* Dark theme standard for Android apps */
+            color: #ffffff;
         }
-      }, 1000);
-    }
-  }
+        
+        /* Drop and Landing Animation for KRISHNA */
+        @keyframes dropLanding {
+            0% {
+                transform: translateY(-200px) scaleY(1.3);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(10px) scaleY(0.9);
+                opacity: 1;
+            }
+            80% {
+                transform: translateY(-5px) scaleY(1.05);
+            }
+            100% {
+                transform: translateY(0) scaleY(1);
+            }
+        }
+        
+        .animate-krishna {
+            display: inline-block;
+            animation: dropLanding 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
 
-  async function resendOtpHandler() {
-    if (!mobileInput.value.trim() || mobileInput.value.trim().length !== 10) {
-      showToast("Enter valid 10-digit mobile number", true);
-      return;
-    }
-    const phone = `+91${mobileInput.value.trim()}`;
-    try {
-      const recaptcha = new firebase.auth.RecaptchaVerifier('sendOtpBtn', { size: 'invisible' });
-      confirmationResult = await auth.signInWithPhoneNumber(phone, recaptcha);
-      showToast("OTP resent successfully!");
-      startResendTimer();
-    } catch (err) {
-      showToast(err.message, true);
-    }
-  }
+        /* Smooth continuous marquee vertical scroll */
+        @keyframes verticalMarquee {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
 
-  // Check existing profile
-  async function userHasProfile(uid) {
-    const doc = await db.collection('users').doc(uid).get();
-    return doc.exists ? doc.data() : null;
-  }
+        .marquee-content {
+            animation: verticalMarquee 15s linear infinite;
+        }
+        
+        .marquee-content:hover {
+            animation-play-state: paused; /* Pauses when user touches/hovers */
+        }
 
-  async function redirectBasedOnProfile(user) {
-    if (!user) return;
-    const profile = await userHasProfile(user.uid);
-    if (profile) {
-      showDashboard(user, profile);
-    } else {
-      pendingUser = user;
-      showCreateAccount();
-    }
-  }
+        /* Custom scrollbar hiding */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center h-screen w-screen m-0 overflow-hidden bg-neutral-950">
 
-  function showDashboard(user, profileData) {
-    loginScreen.classList.add('hidden');
-    createScreen.classList.add('hidden');
-    dashboardScreen.classList.remove('hidden');
-    document.getElementById('dashboardName').innerText = profileData.fullName || user.phoneNumber || "KRISHNA";
-    document.getElementById('dashboardCity').innerText = profileData.city || "—";
-    document.getElementById('dashboardDob').innerText = profileData.dob || "—";
-    refreshAllMarkets();
-  }
+    <div class="w-full h-full max-w-md bg-neutral-900 flex flex-col relative shadow-2xl overflow-hidden border-x border-neutral-800">
+        
+        <div class="h-1/2 flex flex-col justify-between p-6 bg-gradient-to-b from-neutral-900 to-neutral-850 z-10 shrink-0">
+            
+            <div class="text-center mt-4">
+                <h1 class="text-4xl font-extrabold tracking-widest text-amber-500 font-mono drop-shadow-[0_4px_10px_rgba(245,158,11,0.3)]">
+                    <span class="animate-krishna">KRISHNA</span>
+                </h1>
+                <p class="text-xs text-neutral-400 mt-1 uppercase tracking-wider">Premium Dashboard Terminal</p>
+            </div>
 
-  function showCreateAccount() {
-    loginScreen.classList.add('hidden');
-    dashboardScreen.classList.add('hidden');
-    createScreen.classList.remove('hidden');
-    refreshAllMarkets();
-  }
+            <div class="my-auto py-2">
+                
+                <div id="phone-screen" class="space-y-4">
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-neutral-400 text-sm">+91</span>
+                        <input type="tel" id="phone-number" placeholder="Enter Mobile Number" maxlength="10"
+                            class="w-full bg-neutral-800 text-white rounded-lg pl-12 pr-4 py-2.5 text-sm outline-none border border-neutral-700 focus:border-amber-500 transition-all tracking-wide">
+                    </div>
+                    <button onclick="sendOTP()" class="w-full bg-amber-500 hover:bg-amber-600 text-neutral-950 font-bold py-2.5 rounded-lg text-sm transition-all shadow-lg active:scale-[0.98]">
+                        Send OTP
+                    </button>
+                    <div id="recaptcha-container" class="mt-2 flex justify-center scale-90"></div>
+                </div>
 
-  function showLoginScreen(resetOtp = true) {
-    loginScreen.classList.remove('hidden');
-    createScreen.classList.add('hidden');
-    dashboardScreen.classList.add('hidden');
-    if (resetOtp) {
-      otpSection.classList.add('hidden');
-      otpInput.value = '';
-      if (countdownInterval) clearInterval(countdownInterval);
-      if (resendTimerDiv) resendTimerDiv.innerHTML = `Resend OTP in 60s`;
-    }
-    refreshAllMarkets();
-  }
+                <div id="otp-screen" class="space-y-4 hidden">
+                    <p class="text-xs text-neutral-400 text-center">Enter verification code sent to your number</p>
+                    <input type="text" id="otp-code" placeholder="Enter 6-Digit OTP" maxlength="6"
+                        class="w-full bg-neutral-800 text-white text-center rounded-lg py-2.5 text-sm tracking-widest outline-none border border-neutral-700 focus:border-amber-500 transition-all">
+                    <div class="flex gap-2">
+                        <button onclick="verifyOTP()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-neutral-950 font-bold py-2.5 rounded-lg text-sm transition-all shadow-lg">
+                            Verify OTP
+                        </button>
+                        <button onclick="cancelOTP()" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 px-4 py-2.5 rounded-lg text-xs transition-all">
+                            Back
+                        </button>
+                    </div>
+                </div>
 
-  // Mobile number restriction: only 10 digits
-  mobileInput.addEventListener('input', (e) => {
-    let val = e.target.value.replace(/\D/g, '').slice(0, 10);
-    e.target.value = val;
-  });
+                <div id="register-screen" class="space-y-3 hidden">
+                    <p class="text-xs text-amber-500 text-center font-medium">Complete your profile to access dashboard</p>
+                    <input type="text" id="reg-name" placeholder="Full Name" class="w-full bg-neutral-800 text-white rounded-lg px-4 py-2 text-sm outline-none border border-neutral-700 focus:border-amber-500">
+                    <input type="text" id="reg-city" placeholder="City" class="w-full bg-neutral-800 text-white rounded-lg px-4 py-2 text-sm outline-none border border-neutral-700 focus:border-amber-500">
+                    <div class="relative">
+                        <label class="block text-[10px] text-neutral-400 mb-0.5 ml-1">Date of Birth</label>
+                        <input type="date" id="reg-dob" class="w-full bg-neutral-800 text-white rounded-lg px-4 py-2 text-sm outline-none border border-neutral-700 focus:border-amber-500">
+                    </div>
+                    <button onclick="saveProfile()" class="w-full bg-amber-500 hover:bg-amber-600 text-neutral-950 font-bold py-2 rounded-lg text-sm transition-all">
+                        Create Account
+                    </button>
+                </div>
 
-  // Send OTP with +91 prefix internally (no visible front text)
-  sendOtpBtn.onclick = async () => {
-    let rawMobile = mobileInput.value.trim();
-    if (!rawMobile || rawMobile.length !== 10) {
-      showToast("Enter valid 10-digit mobile number", true);
-      return;
-    }
-    const fullPhone = `+91${rawMobile}`;
-    try {
-      const recaptcha = new firebase.auth.RecaptchaVerifier('sendOtpBtn', { size: 'invisible' });
-      confirmationResult = await auth.signInWithPhoneNumber(fullPhone, recaptcha);
-      otpSection.classList.remove('hidden');
-      showToast("OTP sent successfully!");
-      startResendTimer();
-      if (resendTimerDiv) {
-        resendTimerDiv.onclick = () => {
-          if (resendTimerDiv.innerText.includes('Resend OTP') && !resendTimerDiv.innerText.includes('in')) {
-            resendOtpHandler();
-          }
+                <div id="dashboard-status" class="hidden text-center p-4 bg-emerald-950/40 border border-emerald-500/30 rounded-xl">
+                    <p class="text-emerald-400 font-bold text-sm">✓ Authorized Access Granted</p>
+                    <p id="user-display" class="text-xs text-neutral-300 mt-1"></p>
+                    <button onclick="logout()" class="mt-2 text-[11px] text-neutral-400 underline hover:text-white">Log Out</button>
+                </div>
+
+            </div>
+
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-neutral-800"></div>
+                <span class="flex-shrink mx-4 text-neutral-600 text-[10px] tracking-widest font-bold uppercase">Live Results</span>
+                <div class="flex-grow border-t border-neutral-800"></div>
+            </div>
+
+        </div>
+
+        <div class="h-1/2 w-full overflow-hidden bg-neutral-950 relative border-t border-neutral-900">
+            <div class="absolute top-0 inset-x-0 h-8 bg-gradient-to-b from-neutral-950 to-transparent z-20 pointer-events-none"></div>
+            <div class="absolute bottom-0 inset-x-0 h-8 bg-gradient-to-t from-neutral-950 to-transparent z-20 pointer-events-none"></div>
+            
+            <div id="marquee-container" class="marquee-content flex flex-col px-4 pt-2">
+                <div class="flex flex-col space-y-3 pb-3">
+                    <div class="bg-neutral-900 border border-neutral-800 p-4 rounded-xl flex justify-between items-center shadow-md">
+                        <div>
+                            <h4 class="text-amber-500 font-bold text-sm tracking-wide">SRIDEVI</h4>
+                            <p class="text-lg font-mono font-bold text-white tracking-widest mt-1">124-71-560</p>
+                        </div>
+                        <div class="text-right"><span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded font-bold">ACTIVE</span></div>
+                    </div>
+                    <div class="bg-neutral-900 border border-neutral-800 p-4 rounded-xl flex justify-between items-center shadow-md">
+                        <div>
+                            <h4 class="text-amber-500 font-bold text-sm tracking-wide">TIME BAZAR</h4>
+                            <p class="text-lg font-mono font-bold text-white tracking-widest mt-1">123-62-570</p>
+                        </div>
+                        <div class="text-right"><span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded font-bold">ACTIVE</span></div>
+                    </div>
+                    <div class="bg-neutral-900 border border-neutral-800 p-4 rounded-xl flex justify-between items-center shadow-md">
+                        <div>
+                            <h4 class="text-amber-500 font-bold text-sm tracking-wide">MILAN DAY</h4>
+                            <p class="text-lg font-mono font-bold text-white tracking-widest mt-1">234-90-460</p>
+                        </div>
+                        <div class="text-right"><span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded font-bold">ACTIVE</span></div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col space-y-3 pb-3" aria-hidden="true">
+                    <div class="bg-neutral-900 border border-neutral-800 p-4 rounded-xl flex justify-between items-center shadow-md">
+                        <div>
+                            <h4 class="text-amber-500 font-bold text-sm tracking-wide">SRIDEVI</h4>
+                            <p class="text-lg font-mono font-bold text-white tracking-widest mt-1">124-71-560</p>
+                        </div>
+                        <div class="text-right"><span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded font-bold">ACTIVE</span></div>
+                    </div>
+                    <div class="bg-neutral-900 border border-neutral-800 p-4 rounded-xl flex justify-between items-center shadow-md">
+                        <div>
+                            <h4 class="text-amber-500 font-bold text-sm tracking-wide">TIME BAZAR</h4>
+                            <p class="text-lg font-mono font-bold text-white tracking-widest mt-1">123-62-570</p>
+                        </div>
+                        <div class="text-right"><span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded font-bold">ACTIVE</span></div>
+                    </div>
+                    <div class="bg-neutral-900 border border-neutral-800 p-4 rounded-xl flex justify-between items-center shadow-md">
+                        <div>
+                            <h4 class="text-amber-500 font-bold text-sm tracking-wide">MILAN DAY</h4>
+                            <p class="text-lg font-mono font-bold text-white tracking-widest mt-1">234-90-460</p>
+                        </div>
+                        <div class="text-right"><span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded font-bold">ACTIVE</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase config block injected as requested
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhMB5memk6Q4NbDX0_c-Wy5cs3Lg3yk4E",
+            authDomain: "krishna-567.firebaseapp.com",
+            projectId: "krishna-567",
+            storageBucket: "krishna-567.firebasestorage.app",
+            messagingSenderId: "1072566787782",
+            appId: "1:1072566787782:web:f5a74b482ff0477b1a81c7",
+            measurementId: "G-F7BZ275JBJ"
         };
-      }
-    } catch (err) {
-      console.error(err);
-      showToast(err.message, true);
-    }
-  };
 
-  // Verify OTP
-  verifyBtn.onclick = async () => {
-    const otp = otpInput.value.trim();
-    if (!otp || otp.length !== 6) {
-      showToast("Enter 6-digit OTP", true);
-      return;
-    }
-    if (!confirmationResult) {
-      showToast("Request OTP first", true);
-      return;
-    }
-    try {
-      const result = await confirmationResult.confirm(otp);
-      const user = result.user;
-      const profile = await userHasProfile(user.uid);
-      if (profile) {
-        await showDashboard(user, profile);
-      } else {
-        pendingUser = user;
-        showCreateAccount();
-      }
-      if (countdownInterval) clearInterval(countdownInterval);
-    } catch (err) {
-      showToast("Invalid OTP, please try again", true);
-    }
-  };
+        // Initialize Firebase services
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-  // Save new profile
-  saveProfile.onclick = async () => {
-    const name = fullNameInput.value.trim();
-    const city = cityInput.value.trim();
-    const dob = dobInputElem.value.trim();
-    if (!name || !city || !dob) {
-      alert("All fields required (Name, City, Date of Birth)");
-      return;
-    }
-    let currentUser = pendingUser || auth.currentUser;
-    if (!currentUser) {
-      alert("Session expired. Login again.");
-      showLoginScreen();
-      return;
-    }
-    const userData = {
-      fullName: name,
-      city: city,
-      dob: dob,
-      phone: currentUser.phoneNumber,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    try {
-      await db.collection('users').doc(currentUser.uid).set(userData);
-      await showDashboard(currentUser, userData);
-    } catch (err) {
-      alert("Error: " + err.message);
-    }
-  };
+        let confirmationResult = null;
+        let userPhoneNumber = "";
 
-  // Logout
-  function logoutUser() {
-    auth.signOut().then(() => {
-      showLoginScreen(true);
-      pendingUser = null;
-      confirmationResult = null;
-      otpInput.value = '';
-      mobileInput.value = '';
-      if (countdownInterval) clearInterval(countdownInterval);
-      if (resendTimerDiv) resendTimerDiv.innerHTML = `Resend OTP in 60s`;
-      refreshAllMarkets();
-    }).catch(console.error);
-  }
+        // Setup Invisible Recaptcha fallback for validation security 
+        window.onload = function() {
+            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => {}
+            });
+        };
 
-  logoutDashboard?.addEventListener('click', logoutUser);
-  backToLoginBtn?.addEventListener('click', () => {
-    showLoginScreen(true);
-  });
+        // Screen switching controller logic
+        function showScreen(screenId) {
+            ['phone-screen', 'otp-screen', 'register-screen', 'dashboard-status'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
 
-  // Firebase Auth Listener (auto login persistence)
-  auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      const profile = await userHasProfile(user.uid);
-      if (profile && dashboardScreen.classList.contains('hidden')) {
-        await showDashboard(user, profile);
-      } else if (!profile && !createScreen.classList.contains('hidden') === false) {
-        pendingUser = user;
-        showCreateAccount();
-      } else if (profile && dashboardScreen.classList.contains('hidden')) {
-        showDashboard(user, profile);
-      } else if (!profile && !dashboardScreen.classList.contains('hidden')) {
-        showCreateAccount();
-      }
-    } else {
-      if (!loginScreen.classList.contains('hidden') === false) showLoginScreen(true);
-      else showLoginScreen(true);
-    }
-  });
+        // Send OTP Engine
+        window.sendOTP = function() {
+            const phone = document.getElementById('phone-number').value.trim();
+            if(phone.length !== 10 || isNaN(phone)) {
+                alert("Please input a valid 10-digit mobile number");
+                return;
+            }
+            
+            userPhoneNumber = "+91" + phone;
+            const appVerifier = window.recaptchaVerifier;
 
-  // recaptcha container
-  const recDiv = document.createElement('div');
-  recDiv.id = 'recaptcha-hidden';
-  recDiv.style.position = 'absolute';
-  recDiv.style.bottom = '0px';
-  recDiv.style.left = '0px';
-  recDiv.style.opacity = '0';
-  recDiv.style.pointerEvents = 'none';
-  document.body.appendChild(recDiv);
-  new firebase.auth.RecaptchaVerifier('recaptcha-hidden', { size: 'invisible' });
+            signInWithPhoneNumber(auth, userPhoneNumber, appVerifier)
+                .then((result) => {
+                    confirmationResult = result;
+                    showScreen('otp-screen');
+                }).catch((error) => {
+                    alert("Error sending verification request: " + error.message);
+                });
+        };
 
-  refreshAllMarkets();
-  // Ensure scroll area height
-  const styleFix = document.createElement('style');
-  styleFix.textContent = `.v-scroll-area { overflow-y: hidden !important; } .v-auto-scroll { display: flex; flex-direction: column; }`;
-  document.head.appendChild(styleFix);
-  setTimeout(() => {
-    const areas = document.querySelectorAll('.v-scroll-area');
-    areas.forEach(area => { if(area && !area.style.height) area.style.height = '260px'; });
-  }, 100);
-</script>
+        // Verify OTP Entry
+        window.verifyOTP = function() {
+            const code = document.getElementById('otp-code').value.trim();
+            if(code.length !== 6 || isNaN(code)) {
+                alert("Please type the entire 6-digit verification code");
+                return;
+            }
+
+            confirmationResult.confirm(code).then(async (result) => {
+                const user = result.user;
+                
+                // Read from database to check existing data structure record
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    // Pre-existing Account discovered -> Route to Dashboard directly
+                    showDashboard(userDocSnap.data().name);
+                } else {
+                    // Untracked identity discovered -> Route to profile data capture form
+                    showScreen('register-screen');
+                }
+            }).catch((error) => {
+                alert("Invalid configuration profile verification code. Please retry.");
+            });
+        };
+
+        // Fallback backward screen traversal
+        window.cancelOTP = function() {
+            showScreen('phone-screen');
+        };
+
+        // Store registration info profiles inside firestore structure
+        window.saveProfile = async function() {
+            const name = document.getElementById('reg-name').value.trim();
+            const city = document.getElementById('reg-city').value.trim();
+            const dob = document.getElementById('reg-dob').value.value ?? document.getElementById('reg-dob').value;
+
+            if(!name || !city || !dob) {
+                alert("Please completely fill out all registration items requested.");
+                return;
+            }
+
+            const currentUser = auth.currentUser;
+            if(currentUser) {
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    uid: currentUser.uid,
+                    phone: userPhoneNumber,
+                    name: name,
+                    city: city,
+                    dob: dob,
+                    createdAt: new Date().toISOString()
+                });
+                showDashboard(name);
+            }
+        };
+
+        function showDashboard(name) {
+            document.getElementById('user-display').innerText = `Welcome back, ${name}!`;
+            showScreen('dashboard-status');
+        }
+
+        window.logout = function() {
+            signOut(auth).then(() => {
+                showScreen('phone-screen');
+                document.getElementById('phone-number').value = "";
+                document.getElementById('otp-code').value = "";
+            });
+        };
+
+        // State validation persistence listener 
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if(userDocSnap.exists()) {
+                     showDashboard(userDocSnap.data().name);
+                }
+            } else {
+                showScreen('phone-screen');
+            }
+        });
+    </script>
 </body>
 </html>
