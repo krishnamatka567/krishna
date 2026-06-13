@@ -3,304 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <title>KRISHNA - Matka Results</title>
+  <title>KRISHNA - Sattam App</title>
   <!-- Firebase SDKs -->
-  <script type="module">
-    // ============================================================
-    // 🔥 FIREBASE CONFIGURATION - REPLACE WITH YOUR OWN CREDENTIALS
-    // ============================================================
-    const firebaseConfig = {
-      apiKey: "AIzaSyDummyKeyReplaceWithYourRealKey123456",
-      authDomain: "your-project.firebaseapp.com",
-      projectId: "your-project-id",
-      storageBucket: "your-project.appspot.com",
-      messagingSenderId: "123456789012",
-      appId: "1:123456789012:web:abcdef123456"
-    };
-    
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    
-    let auth, db;
-    let firebaseInitialized = false;
-    
-    try {
-      const app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      db = getFirestore(app);
-      firebaseInitialized = true;
-    } catch (error) {
-      console.error("Firebase error:", error);
-    }
-    
-    let confirmationResult = null;
-    let currentPhoneNumber = "";
-    
-    // DOM Elements
-    const splashScreen = document.getElementById('splash-screen');
-    const authContainer = document.getElementById('auth-container');
-    const dashboardContainer = document.getElementById('dashboard-container');
-    const loginCard = document.getElementById('login-card');
-    const otpCard = document.getElementById('otp-card');
-    const createAccountCard = document.getElementById('create-account-card');
-    const phoneInput = document.getElementById('phone-number');
-    const sendOtpBtn = document.getElementById('send-otp-btn');
-    const otpInput = document.getElementById('otp-code');
-    const verifyOtpBtn = document.getElementById('verify-otp-btn');
-    const nameInput = document.getElementById('full-name');
-    const cityInput = document.getElementById('city');
-    const dobInput = document.getElementById('dob');
-    const createAccountBtn = document.getElementById('create-account-btn');
-    const backToLoginBtn = document.getElementById('back-to-login');
-    const userWelcomeSpan = document.getElementById('user-welcome');
-    const userCitySpan = document.getElementById('user-city-dob');
-    const autoScrollDiv = document.getElementById('auto-scroll-markets');
-    const autoScrollDashboard = document.getElementById('auto-scroll-markets-dashboard');
-    
-    // Market Data
-    const marketItems = [
-      { name: "SRIDEVI", digits: "124-71-560" },
-      { name: "TIME BAZAR", digits: "123-62-570" },
-      { name: "MILAN DAY", digits: "456-89-123" },
-      { name: "KALYAN NIGHT", digits: "789-45-678" },
-      { name: "RAJDHANI", digits: "234-90-345" },
-      { name: "GALI", digits: "111-22-333" },
-      { name: "DISAWAR", digits: "555-77-888" }
-    ];
-    
-    function buildMarketHTML() {
-      let html = '';
-      for (let i = 0; i < 8; i++) {
-        marketItems.forEach(item => {
-          html += `
-            <div class="market-card">
-              <div class="market-digits">${item.digits}</div>
-              <div class="market-name">${item.name}</div>
-            </div>
-          `;
-        });
-      }
-      return html;
-    }
-    
-    // Smooth auto-scrolling with gentle vibration
-    let scrollInterval = null;
-    let currentScrollTop = 0;
-    let isScrolling = true;
-    
-    function triggerGentleVibration() {
-      const cards = document.querySelectorAll('.market-card');
-      cards.forEach((card, index) => {
-        if (Math.random() > 0.85) {
-          card.style.transform = 'translateY(2px)';
-          setTimeout(() => { if(card) card.style.transform = ''; }, 50);
-        }
-      });
-    }
-    
-    function startAutoScroll(container) {
-      if (!container) return;
-      if (scrollInterval) clearInterval(scrollInterval);
-      
-      container.scrollTop = 0;
-      currentScrollTop = 0;
-      container.innerHTML = buildMarketHTML();
-      
-      scrollInterval = setInterval(() => {
-        if (!isScrolling || !container) return;
-        
-        const maxScroll = container.scrollHeight - container.clientHeight;
-        if (currentScrollTop >= maxScroll) {
-          currentScrollTop = 0;
-          container.scrollTop = 0;
-          triggerGentleVibration();
-        } else {
-          currentScrollTop += 0.5;
-          container.scrollTop = currentScrollTop;
-          if (Math.random() > 0.96) triggerGentleVibration();
-        }
-      }, 30);
-    }
-    
-    function bindScrollEvents(container) {
-      if (!container) return;
-      container.addEventListener('touchstart', () => { isScrolling = false; });
-      container.addEventListener('touchend', () => { setTimeout(() => { isScrolling = true; }, 2500); });
-      container.addEventListener('mousedown', () => { isScrolling = false; });
-      container.addEventListener('mouseup', () => { setTimeout(() => { isScrolling = true; }, 2500); });
-    }
-    
-    function showLoader(btn, isLoading, originalText) {
-      if (isLoading) {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> Please wait...';
-      } else {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-      }
-    }
-    
-    async function showDashboard(userId, userData) {
-      authContainer.style.display = 'none';
-      dashboardContainer.style.display = 'flex';
-      userWelcomeSpan.innerText = userData.name || 'KRISHNA';
-      userCitySpan.innerText = `${userData.city || 'City'} • ${userData.dob || 'DOB'}`;
-      startAutoScroll(autoScrollDashboard);
-      bindScrollEvents(autoScrollDashboard);
-    }
-    
-    function demoLogin(phoneNumber) {
-      const storedUsers = JSON.parse(localStorage.getItem('demoUsers') || '{}');
-      const userData = storedUsers[phoneNumber];
-      if (userData) {
-        showDashboard(phoneNumber, userData);
-      } else {
-        loginCard.style.display = 'none';
-        otpCard.style.display = 'none';
-        createAccountCard.style.display = 'block';
-        currentPhoneNumber = phoneNumber;
-      }
-    }
-    
-    function demoCreateAccount(name, city, dob) {
-      const users = JSON.parse(localStorage.getItem('demoUsers') || '{}');
-      users[currentPhoneNumber] = { name, city, dob, phone: currentPhoneNumber };
-      localStorage.setItem('demoUsers', JSON.stringify(users));
-      showDashboard(currentPhoneNumber, { name, city, dob });
-    }
-    
-    if (verifyOtpBtn) {
-      verifyOtpBtn.addEventListener('click', async () => {
-        const code = otpInput.value.trim();
-        if (!code) { alert("Please enter OTP"); return; }
-        
-        if (!firebaseInitialized) {
-          if (code.length === 6) { demoLogin(currentPhoneNumber); alert("Login successful!"); }
-          else { alert("Enter 6-digit OTP"); }
-          return;
-        }
-        
-        showLoader(verifyOtpBtn, true, "Verifying...");
-        try {
-          const result = await confirmationResult.confirm(code);
-          const user = result.user;
-          const userDocRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(userDocRef);
-          if (docSnap.exists()) {
-            await showDashboard(user.uid, docSnap.data());
-          } else {
-            loginCard.style.display = 'none';
-            otpCard.style.display = 'none';
-            createAccountCard.style.display = 'block';
-          }
-        } catch (error) { alert("Invalid OTP: " + error.message); }
-        finally { showLoader(verifyOtpBtn, false, "Verify OTP"); }
-      });
-    }
-    
-    if (sendOtpBtn) {
-      sendOtpBtn.addEventListener('click', async () => {
-        let rawPhone = phoneInput.value.trim();
-        let digits = rawPhone.replace(/\D/g, '');
-        if (digits.length !== 10) { alert("Please enter exactly 10 digits"); return; }
-        const fullNumber = '+91' + digits;
-        currentPhoneNumber = fullNumber;
-        
-        if (!firebaseInitialized) {
-          alert("Demo Mode: Enter any 6-digit OTP");
-          loginCard.style.display = 'none';
-          otpCard.style.display = 'block';
-          return;
-        }
-        
-        showLoader(sendOtpBtn, true, "Sending OTP...");
-        try {
-          const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-          confirmationResult = await signInWithPhoneNumber(auth, fullNumber, recaptchaVerifier);
-          alert("OTP sent!");
-          loginCard.style.display = 'none';
-          otpCard.style.display = 'block';
-        } catch (error) { alert("Error: " + error.message); }
-        finally { showLoader(sendOtpBtn, false, "Send OTP"); }
-      });
-    }
-    
-    if (createAccountBtn) {
-      createAccountBtn.addEventListener('click', async () => {
-        const name = nameInput.value.trim();
-        const city = cityInput.value.trim();
-        const dob = dobInput.value.trim();
-        if (!name || !city || !dob) { alert("Please fill all fields"); return; }
-        
-        if (!firebaseInitialized) { demoCreateAccount(name, city, dob); return; }
-        
-        showLoader(createAccountBtn, true, "Creating...");
-        try {
-          const user = auth.currentUser;
-          if (!user) throw new Error("No user");
-          const userData = { name, city, dob, phone: currentPhoneNumber };
-          await setDoc(doc(db, "users", user.uid), userData);
-          await showDashboard(user.uid, userData);
-        } catch (error) { alert("Failed: " + error.message); }
-        finally { showLoader(createAccountBtn, false, "Create Account"); }
-      });
-    }
-    
-    if (backToLoginBtn) {
-      backToLoginBtn.addEventListener('click', () => {
-        createAccountCard.style.display = 'none';
-        loginCard.style.display = 'block';
-        otpCard.style.display = 'none';
-        otpInput.value = '';
-      });
-    }
-    
-    if (firebaseInitialized) {
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          const userDocRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(userDocRef);
-          if (docSnap.exists() && dashboardContainer.style.display !== 'flex') {
-            await showDashboard(user.uid, docSnap.data());
-          } else if (!docSnap.exists() && authContainer.style.display !== 'none') {
-            loginCard.style.display = 'none';
-            otpCard.style.display = 'none';
-            createAccountCard.style.display = 'block';
-          }
-        } else {
-          if (dashboardContainer.style.display === 'flex') dashboardContainer.style.display = 'none';
-          authContainer.style.display = 'flex';
-          loginCard.style.display = 'block';
-          otpCard.style.display = 'none';
-          createAccountCard.style.display = 'none';
-          phoneInput.value = '';
-          otpInput.value = '';
-          startAutoScroll(autoScrollDiv);
-          bindScrollEvents(autoScrollDiv);
-        }
-      });
-    }
-    
-    setTimeout(() => {
-      splashScreen.style.display = 'none';
-      authContainer.style.display = 'flex';
-      startAutoScroll(autoScrollDiv);
-      bindScrollEvents(autoScrollDiv);
-    }, 1500);
-    
-    if (phoneInput) {
-      phoneInput.addEventListener('input', function(e) {
-        this.value = this.value.replace(/\D/g, '').slice(0, 10);
-      });
-    }
-    if (otpInput) {
-      otpInput.addEventListener('input', function(e) {
-        this.value = this.value.replace(/\D/g, '').slice(0, 6);
-      });
-    }
-  </script>
-  
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -308,426 +18,645 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-    
+
     body {
-      font-family: 'Segoe UI', 'Poppins', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-      background: #0a0c10;
+      background: #0A0F1E;
+      font-family: 'Inter', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      margin: 0;
+      padding: 12px;
     }
-    
+
+    /* Android App like card container */
     .app-container {
+      max-width: 420px;
       width: 100%;
-      max-width: 450px;
-      height: 100vh;
-      background: #f8fafc;
-      box-shadow: 0 0 40px rgba(0,0,0,0.3);
+      height: 780px;
+      background: #121826;
+      border-radius: 44px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
       overflow: hidden;
+      position: relative;
       display: flex;
       flex-direction: column;
-      position: relative;
     }
-    
-    /* Splash Screen */
-    #splash-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #1a4a7a, #0e2f4f);
-      z-index: 200;
+
+    /* Status bar mock */
+    .status-bar {
+      padding: 14px 20px 6px;
+      color: #eee;
+      font-size: 14px;
+      font-weight: 500;
       display: flex;
-      align-items: center;
+      justify-content: space-between;
+      background: #121826;
+    }
+
+    /* content wrapper */
+    .screen {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 20px;
+      scroll-behavior: smooth;
+    }
+
+    /* Hide scrollbar but keep functionality */
+    .screen::-webkit-scrollbar {
+      width: 4px;
+    }
+    .screen::-webkit-scrollbar-track {
+      background: #1E2538;
+      border-radius: 8px;
+    }
+    .screen::-webkit-scrollbar-thumb {
+      background: #4F46E5;
+      border-radius: 8px;
+    }
+
+    /* LOGIN TOP HALF + BOTTOM MARKET */
+    .login-top {
+      min-height: 48%;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
-      flex-direction: column;
-      color: white;
-      animation: fadeOut 0.6s ease-in-out 1.2s forwards;
+      padding: 20px 0 10px;
     }
-    
-    @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
-    }
-    
-    .splash-title {
-      font-size: 3rem;
+
+    .animated-title {
+      font-size: 42px;
       font-weight: 800;
-      letter-spacing: 3px;
-      animation: bounceText 0.5s ease-out;
-    }
-    
-    @keyframes bounceText {
-      0% { transform: scale(0.8); opacity: 0; }
-      70% { transform: scale(1.05); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    
-    /* Auth Container */
-    #auth-container {
-      display: none;
-      flex-direction: column;
-      height: 100%;
-      width: 100%;
-      background: #ffffff;
-    }
-    
-    /* Top section - Blue gradient */
-    .top-section {
-      background: linear-gradient(145deg, #1a4f8b, #0d355c);
-      padding: 20px 24px 35px 24px;
-      position: relative;
-      z-index: 2;
-    }
-    
-    /* KRISHNA Headline */
-    .brand-headline {
+      background: linear-gradient(135deg, #FFD966, #FFB347);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 12px;
       text-align: center;
-      margin-bottom: 24px;
+      animation: dropLand 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
-    .brand-name {
-      font-size: 2.8rem;
-      font-weight: 800;
-      color: white;
-      text-shadow: 0 3px 12px rgba(0,0,0,0.25);
-      letter-spacing: 3px;
-      animation: gentleGlow 2s infinite ease-in-out;
+
+    @keyframes dropLand {
+      0% {
+        opacity: 0;
+        transform: translateY(-120px) rotateX(-30deg);
+      }
+      70% {
+        opacity: 0.9;
+        transform: translateY(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+      }
     }
-    @keyframes gentleGlow {
-      0%, 100% { text-shadow: 0 3px 12px rgba(0,0,0,0.25); }
-      50% { text-shadow: 0 3px 18px rgba(255,220,100,0.5); }
+
+    .sub-glow {
+      text-align: center;
+      font-size: 13px;
+      color: #8E9AAF;
+      margin-bottom: 28px;
+      letter-spacing: 0.5px;
     }
-    .brand-sub {
-      font-size: 0.7rem;
-      color: rgba(255,255,255,0.8);
-      letter-spacing: 2px;
-      margin-top: 5px;
-    }
-    
-    /* Login Form Card */
-    .form-container {
-      max-width: 300px;
-      margin: 0 auto;
-    }
-    .login-card {
-      background: white;
-      border-radius: 36px;
-      padding: 20px 18px;
-      box-shadow: 0 18px 35px rgba(0,0,0,0.2);
-    }
-    .phone-wrapper {
+
+    .input-group {
+      background: #1E2538;
+      border-radius: 24px;
+      padding: 6px 18px;
       display: flex;
       align-items: center;
-      background: #f8fafc;
-      border-radius: 32px;
-      border: 1.5px solid #e2e8f0;
-      overflow: hidden;
-      transition: border-color 0.2s;
+      gap: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #2D364F;
+      transition: 0.2s;
     }
-    .phone-wrapper:focus-within {
-      border-color: #1a4f8b;
+    .input-group i {
+      color: #6C7A96;
+      font-size: 18px;
     }
-    .country-code {
-      padding: 14px 12px;
-      font-weight: 700;
-      background: #f1f5f9;
-      color: #1a4f8b;
-      font-size: 1rem;
-    }
-    .phone-wrapper input {
+    .input-group input {
+      background: transparent;
       border: none;
       flex: 1;
-      padding: 14px 12px;
-      font-size: 1rem;
-      background: #f8fafc;
+      padding: 16px 0;
+      font-size: 16px;
+      color: #F0F3FA;
       outline: none;
     }
-    .send-otp-btn {
-      background: #0d355c;
+    .input-group input::placeholder {
+      color: #5C6A87;
+    }
+
+    .btn-primary {
+      background: linear-gradient(95deg, #6C5CE7, #4F46E5);
+      border: none;
       width: 100%;
       padding: 14px;
-      border: none;
       border-radius: 40px;
-      color: white;
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 16px;
+      color: white;
+      margin: 8px 0;
       cursor: pointer;
-      margin-top: 18px;
-      transition: all 0.2s;
+      transition: 0.2s;
+      box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
     }
-    .send-otp-btn:active { transform: scale(0.97); background: #1a4f8b; }
-    
-    /* ========== PERFECT MIDDLE CURVE ========== */
-    .curve-wrapper {
-      position: relative;
-      background: #f1f5f9;
-      height: 32px;
-      margin-top: -8px;
-      z-index: 5;
-    }
-    
-    .perfect-curve {
-      position: absolute;
-      top: -32px;
-      left: 0;
-      width: 100%;
-      height: 48px;
-      background: #f1f5f9;
-      border-radius: 0 0 50% 50%;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
-    
-    /* Alternative for bottom section */
-    .bottom-scroll-area {
-      flex: 1;
-      overflow: hidden;
-      background: #f1f5f9;
-      position: relative;
-    }
-    
-    /* Make the curve visible and elegant */
-    .bottom-scroll-area::before {
-      content: '';
-      position: absolute;
-      top: -28px;
-      left: 0;
-      width: 100%;
-      height: 42px;
-      background: #f1f5f9;
-      border-radius: 50% 50% 0 0;
-      z-index: 3;
-      box-shadow: 0 -6px 12px rgba(0,0,0,0.03);
-    }
-    
-    /* Scroll container */
-    .scroll-container {
-      height: 100%;
-      overflow-y: auto;
-      scroll-behavior: smooth;
-      padding: 30px 16px 20px 16px;
-      scrollbar-width: thin;
-    }
-    .scroll-container::-webkit-scrollbar {
-      width: 2px;
-    }
-    .scroll-container::-webkit-scrollbar-track {
-      background: #e2e8f0;
-      border-radius: 10px;
-    }
-    .scroll-container::-webkit-scrollbar-thumb {
-      background: #1a4f8b;
-      border-radius: 10px;
-    }
-    
-    /* Market Cards - Beautiful Design */
-    .market-card {
-      background: white;
-      border-radius: 24px;
-      padding: 16px 20px;
-      margin-bottom: 14px;
+    .btn-primary:active { transform: scale(0.97); opacity: 0.9;}
+
+    .divider {
+      display: flex;
+      align-items: center;
       text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      border: 1px solid rgba(26,79,139,0.1);
-      transition: all 0.2s ease;
-      cursor: pointer;
+      margin: 20px 0;
+      color: #5F6E8C;
+      font-size: 12px;
     }
-    .market-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(26,79,139,0.12);
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #2D364F;
     }
-    
-    .market-digits {
-      font-family: 'Courier New', 'SF Mono', monospace;
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: #1a4f8b;
-      letter-spacing: 3px;
-      margin-bottom: 8px;
+    .divider::before { margin-right: 12px; }
+    .divider::after { margin-left: 12px; }
+
+    /* market results - smooth scrolling repeated */
+    .market-section {
+      background: #0F141F;
+      border-radius: 32px;
+      padding: 10px 0;
+      margin-top: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #262E44;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .market-header {
+      padding: 6px 16px;
+      font-weight: 600;
+      color: #FFB347;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+
+    .marquee-wrapper {
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+      width: 100%;
+    }
+
+    .smooth-scroll-content {
+      display: inline-block;
+      white-space: nowrap;
+      animation: scrollHorizontal 25s linear infinite;
+      padding-right: 20px;
+    }
+
+    .market-card {
+      display: inline-block;
+      background: #1A2132;
+      margin-right: 14px;
+      padding: 10px 20px;
+      border-radius: 28px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      vertical-align: middle;
     }
     .market-name {
       font-weight: 700;
-      font-size: 1rem;
-      color: #475569;
+      font-size: 16px;
+      color: #F5E7C8;
+    }
+    .market-numbers {
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: 600;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      color: #B9F6CA;
     }
-    
-    /* Dashboard Styles */
-    #dashboard-container {
-      display: none;
-      flex-direction: column;
-      height: 100%;
-      background: #f1f5f9;
+
+    @keyframes scrollHorizontal {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
-    .dashboard-top {
-      background: linear-gradient(145deg, #1a4f8b, #0d355c);
-      padding: 28px 24px 32px 24px;
-      color: white;
-    }
-    .welcome-text {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .city-dob {
-      font-size: 0.85rem;
-      opacity: 0.85;
-    }
-    .dashboard-bottom {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
-    .dashboard-bottom::before {
-      content: '';
-      position: absolute;
-      top: -28px;
-      left: 0;
-      width: 100%;
-      height: 42px;
-      background: #f1f5f9;
-      border-radius: 50% 50% 0 0;
-      z-index: 2;
-    }
-    .dashboard-bottom .scroll-container {
-      padding-top: 30px;
-    }
-    
-    /* OTP & Create Account Cards */
-    .otp-card, .create-card {
-      background: white;
-      border-radius: 36px;
-      padding: 24px 20px;
-      box-shadow: 0 18px 35px rgba(0,0,0,0.2);
-    }
-    .otp-card h3, .create-card h3 {
-      color: #0d355c;
-      font-size: 1.4rem;
-      text-align: center;
+
+    /* create account form (hidden by default) */
+    .create-account-form {
+      margin-top: 20px;
+      background: #0F141F;
+      border-radius: 32px;
+      padding: 20px 16px;
       margin-bottom: 20px;
     }
-    .otp-card input, .create-card input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 32px;
-      font-size: 1rem;
-      margin-bottom: 16px;
-      background: #f8fafc;
-      outline: none;
-      transition: border-color 0.2s;
+
+    /* dashboard style */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 0 10px;
+      border-bottom: 1px solid #2A334C;
+      margin-bottom: 20px;
     }
-    .otp-card input:focus, .create-card input:focus {
-      border-color: #1a4f8b;
-    }
-    .verify-btn, .create-btn {
-      background: #0d355c;
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 40px;
-      color: white;
+    .welcome-text {
+      font-size: 22px;
       font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 8px;
+      color: #FFE6B3;
     }
-    .back-link {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.85rem;
-      color: #1a4f8b;
+    .logout-btn {
+      background: #2C354E;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 40px;
+      color: #FFB347;
       font-weight: 500;
-      cursor: pointer;
     }
-    
-    .spinner {
+    .stats-grid {
+      background: linear-gradient(145deg, #1A2132, #141B2A);
+      border-radius: 28px;
+      padding: 18px;
+      margin-bottom: 28px;
+    }
+    .city-badge {
       display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 0.6s linear infinite;
+      background: #4F46E5;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 13px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    @media (max-width: 480px) {
-      .brand-name { font-size: 2.3rem; }
-      .market-digits { font-size: 1.3rem; }
-      .top-section { padding: 15px 20px 30px 20px; }
-      .login-card { padding: 16px; }
+
+    /* half screen fixed and bottom half scrollable? Actually requirement: top half fixed? we use flex scrolling */
+    .fixed-half-illusion {
+      flex-shrink: 0;
+    }
+    .bottom-scrollable {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* hiding screens */
+    .hidden {
+      display: none;
+    }
+
+    .toast-msg {
+      background: #1F2937;
+      color: #FACC15;
+      padding: 10px;
+      border-radius: 24px;
+      text-align: center;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+    button {
+      background: none;
+      border: none;
     }
   </style>
 </head>
 <body>
-<div class="app-container">
-  <!-- Splash Screen -->
-  <div id="splash-screen">
-    <div class="splash-title">KRISHNA</div>
-    <div style="margin-top: 8px; font-size: 0.75rem; opacity: 0.8;">MATKA RESULTS</div>
+<div class="app-container" id="appRoot">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span><i class="fas fa-battery-full"></i> <i class="fas fa-signal"></i></span>
   </div>
-  
-  <!-- Authentication Container -->
-  <div id="auth-container">
-    <!-- Top Blue Section -->
-    <div class="top-section">
-      <div class="brand-headline">
-        <div class="brand-name">KRISHNA</div>
-        <div class="brand-sub">OFFICIAL MATKA</div>
+
+  <!-- LOGIN SCREEN (visible by default) -->
+  <div id="loginScreen" class="screen">
+    <div class="login-top">
+      <div class="animated-title">KRISHNA</div>
+      <div class="sub-glow">matka · satta · bazar</div>
+      
+      <div class="input-group">
+        <i class="fas fa-phone-alt"></i>
+        <input type="tel" id="mobileNumber" placeholder="+91 99999 88888" value="+919999988888">
       </div>
-      <div class="form-container">
-        <!-- Login Card -->
-        <div id="login-card" class="login-card">
-          <div class="phone-wrapper">
-            <span class="country-code">+91</span>
-            <input type="tel" id="phone-number" placeholder="9876543210" maxlength="10" inputmode="numeric">
-          </div>
-          <button id="send-otp-btn" class="send-otp-btn">Send OTP</button>
+      <button id="sendOtpBtn" class="btn-primary"><i class="fas fa-key"></i> Send OTP</button>
+      <div class="divider">or continue with</div>
+      <!-- OTP section appear after send -->
+      <div id="otpSection" class="hidden">
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="text" id="otpCode" placeholder="6-digit OTP" maxlength="6">
         </div>
-        
-        <!-- OTP Card -->
-        <div id="otp-card" class="otp-card" style="display: none;">
-          <h3>Verify OTP</h3>
-          <input type="text" id="otp-code" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric">
-          <button id="verify-otp-btn" class="verify-btn">Verify & Login</button>
-        </div>
-        
-        <!-- Create Account Card -->
-        <div id="create-account-card" class="create-card" style="display: none;">
-          <h3>Create Account</h3>
-          <input type="text" id="full-name" placeholder="Full Name">
-          <input type="text" id="city" placeholder="City">
-          <input type="date" id="dob" placeholder="Date of Birth">
-          <button id="create-account-btn" class="create-btn">Complete Signup</button>
-          <div id="back-to-login" class="back-link">← Back to Login</div>
+        <button id="verifyOtpBtn" class="btn-primary">Verify & Login</button>
+      </div>
+      <div id="loginMessage" class="toast-msg hidden"></div>
+    </div>
+
+    <!-- Bottom half: market results with auto smooth scrolling repeated -->
+    <div class="market-section">
+      <div class="market-header"><i class="fas fa-chart-line"></i> LIVE MARKET STREAM</div>
+      <div class="marquee-wrapper">
+        <div class="smooth-scroll-content" id="marketScroller">
+          <!-- dynamic repeated market items injected via JS -->
         </div>
       </div>
     </div>
-    
-    <!-- PERFECT MIDDLE CURVE -->
-    <div class="curve-wrapper">
-      <div class="perfect-curve"></div>
+  </div>
+
+  <!-- CREATE ACCOUNT SCREEN (hidden initial) -->
+  <div id="createAccountScreen" class="screen hidden">
+    <div style="margin-top: 20px;">
+      <div class="animated-title" style="font-size: 28px;">✨ Complete Profile</div>
+      <div class="create-account-form">
+        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="fullName" placeholder="Full Name"></div>
+        <div class="input-group"><i class="fas fa-city"></i><input type="text" id="cityName" placeholder="City"></div>
+        <div class="input-group"><i class="fas fa-calendar-alt"></i><input type="date" id="dobInput" placeholder="Date of Birth"></div>
+        <button id="saveProfileBtn" class="btn-primary">Complete Registration</button>
+        <button id="backToLoginFromCreate" style="background:transparent; color:#8E9AAF; margin-top:12px;">← Back to Login</button>
+      </div>
     </div>
-    
-    <!-- Bottom Scrolling Markets -->
-    <div class="bottom-scroll-area">
-      <div id="auto-scroll-markets" class="scroll-container"></div>
+    <!-- market also visible on create screen for continuity -->
+    <div class="market-section">
+      <div class="market-header">📊 TRENDING MARKETS</div>
+      <div class="marquee-wrapper"><div class="smooth-scroll-content" id="marketScroller2"></div></div>
     </div>
   </div>
-  
-  <!-- Dashboard Container -->
-  <div id="dashboard-container">
-    <div class="dashboard-top">
-      <div class="welcome-text" id="user-welcome">Welcome, KRISHNA</div>
-      <div class="city-dob" id="user-city-dob">City • Date of Birth</div>
+
+  <!-- DASHBOARD SCREEN (after login / existing user) -->
+  <div id="dashboardScreen" class="screen hidden">
+    <div class="dashboard-header">
+      <span class="welcome-text">Welcome, <span id="dashboardName">KRISHNA</span></span>
+      <button id="logoutBtnDashboard" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Exit</button>
     </div>
-    <div class="dashboard-bottom">
-      <div id="auto-scroll-markets-dashboard" class="scroll-container"></div>
+    <div class="stats-grid">
+      <p><i class="fas fa-map-marker-alt"></i> City: <strong id="dashboardCity">—</strong></p>
+      <p><i class="fas fa-birthday-cake"></i> DOB: <strong id="dashboardDob">—</strong></p>
+      <div class="city-badge"><i class="fas fa-check-circle"></i> Verified Member</div>
     </div>
+    <div class="market-section" style="margin-top: 0;">
+      <div class="market-header">🏆 WINNING RESULTS (Live Scroll)</div>
+      <div class="marquee-wrapper"><div class="smooth-scroll-content" id="marketScrollerDash"></div></div>
+    </div>
+    <div style="padding: 16px 0; text-align:center; color:#6C7A96; font-size:13px;">✨ Your activity dashboard ✨</div>
   </div>
-  <div id="recaptcha-container"></div>
 </div>
+
+<script>
+  // FIREBASE CONFIG
+  const firebaseConfig = {
+    apiKey: "AIzaSyAhMB5memk6Q4NbDX0_c-Wy5cs3Lg3yk4E",
+    authDomain: "krishna-567.firebaseapp.com",
+    projectId: "krishna-567",
+    storageBucket: "krishna-567.firebasestorage.app",
+    messagingSenderId: "1072566787782",
+    appId: "1:1072566787782:web:f5a74b482ff0477b1a81c7",
+    measurementId: "G-F7BZ275JBJ"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // DOM elements
+  const loginScreen = document.getElementById('loginScreen');
+  const createScreen = document.getElementById('createAccountScreen');
+  const dashboardScreen = document.getElementById('dashboardScreen');
+  const sendOtpBtn = document.getElementById('sendOtpBtn');
+  const otpSection = document.getElementById('otpSection');
+  const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+  const mobileInput = document.getElementById('mobileNumber');
+  const otpInput = document.getElementById('otpCode');
+  const loginMsg = document.getElementById('loginMessage');
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
+  const fullNameInput = document.getElementById('fullName');
+  const cityInput = document.getElementById('cityName');
+  const dobInput = document.getElementById('dobInput');
+
+  // Helper UI
+  function showToast(containerEl, message, isError = false) {
+    const msgDiv = containerEl || loginMsg;
+    msgDiv.innerText = message;
+    msgDiv.classList.remove('hidden');
+    msgDiv.style.background = isError ? '#3b2a2a' : '#1F2937';
+    setTimeout(() => msgDiv.classList.add('hidden'), 3000);
+  }
+
+  let confirmationResult = null;
+  let pendingMobile = null;
+
+  // Market Data sample (repeated items for smooth scroll)
+  const marketEntries = [
+    { name: "SRIDEVI", numbers: "124-71-560" },
+    { name: "TIME BAZAR", numbers: "123-62-570" },
+    { name: "MILAN DAY", numbers: "456-89-234" },
+    { name: "RAJDHANI", numbers: "789-34-999" },
+    { name: "KALYAN", numbers: "321-54-777" },
+    { name: "MAIN BAZAR", numbers: "654-32-111" }
+  ];
+  // function to generate repeated HTML items for infinite smooth scrolling
+  function generateMarketHTML() {
+    let html = '';
+    // repeat 3 times for seamless loop
+    for (let repeat = 0; repeat < 3; repeat++) {
+      marketEntries.forEach(item => {
+        html += `<div class="market-card"><div class="market-name">${item.name}</div><div class="market-numbers">${item.numbers}</div></div>`;
+      });
+    }
+    return html;
+  }
+
+  function renderMarketScrolls() {
+    const marketHTML = generateMarketHTML();
+    const scroller1 = document.getElementById('marketScroller');
+    const scroller2 = document.getElementById('marketScroller2');
+    const scrollerDash = document.getElementById('marketScrollerDash');
+    if (scroller1) scroller1.innerHTML = marketHTML;
+    if (scroller2) scroller2.innerHTML = marketHTML;
+    if (scrollerDash) scrollerDash.innerHTML = marketHTML;
+  }
+
+  // check if user exists in firestore (by UID)
+  async function checkUserProfileExists(uid) {
+    const docRef = db.collection('users').doc(uid);
+    const doc = await docRef.get();
+    return doc.exists ? doc.data() : null;
+  }
+
+  // After login verification
+  async function handlePostAuthentication(user) {
+    if (!user) return;
+    const profileData = await checkUserProfileExists(user.uid);
+    if (profileData) {
+      // existing user -> dashboard
+      showDashboard(user, profileData);
+    } else {
+      // new user: show create account screen
+      pendingUserForProfile = user;
+      switchToCreateAccount();
+    }
+  }
+
+  let pendingUserForProfile = null;
+
+  function switchToCreateAccount() {
+    loginScreen.classList.add('hidden');
+    dashboardScreen.classList.add('hidden');
+    createScreen.classList.remove('hidden');
+    renderMarketScrolls();
+  }
+
+  async function showDashboard(user, profile) {
+    loginScreen.classList.add('hidden');
+    createScreen.classList.add('hidden');
+    dashboardScreen.classList.remove('hidden');
+    document.getElementById('dashboardName').innerText = profile.fullName || user.phoneNumber || "KRISHNA";
+    document.getElementById('dashboardCity').innerText = profile.city || "Not set";
+    document.getElementById('dashboardDob').innerText = profile.dob || "—";
+    renderMarketScrolls();
+  }
+
+  // Send OTP
+  sendOtpBtn.onclick = async () => {
+    let phone = mobileInput.value.trim();
+    if (!phone) {
+      showToast(loginMsg, "Enter mobile number", true);
+      return;
+    }
+    if (!phone.startsWith('+')) phone = '+91' + phone;
+    try {
+      const appVerifier = new firebase.auth.RecaptchaVerifier('sendOtpBtn', {
+        size: 'invisible',
+        'callback': () => {}
+      });
+      confirmationResult = await auth.signInWithPhoneNumber(phone, appVerifier);
+      pendingMobile = phone;
+      otpSection.classList.remove('hidden');
+      showToast(loginMsg, "OTP sent successfully!");
+    } catch (err) {
+      console.error(err);
+      showToast(loginMsg, err.message, true);
+    }
+  };
+
+  verifyOtpBtn.onclick = async () => {
+    const otp = otpInput.value.trim();
+    if (!otp || !confirmationResult) {
+      showToast(loginMsg, "Enter valid OTP or request again", true);
+      return;
+    }
+    try {
+      const result = await confirmationResult.confirm(otp);
+      const user = result.user;
+      // check if profile exists in firestore
+      const profileExists = await checkUserProfileExists(user.uid);
+      if (profileExists) {
+        await showDashboard(user, profileExists);
+      } else {
+        pendingUserForProfile = user;
+        switchToCreateAccount();
+      }
+    } catch (err) {
+      showToast(loginMsg, "Invalid OTP. Try again", true);
+    }
+  };
+
+  // Save new profile
+  saveProfileBtn.onclick = async () => {
+    const name = fullNameInput.value.trim();
+    const city = cityInput.value.trim();
+    const dob = dobInput.value.trim();
+    if (!name || !city || !dob) {
+      alert("Please fill all fields");
+      return;
+    }
+    if (!pendingUserForProfile && auth.currentUser) pendingUserForProfile = auth.currentUser;
+    if (!pendingUserForProfile) {
+      alert("Session expired, please login again.");
+      window.location.reload();
+      return;
+    }
+    const uid = pendingUserForProfile.uid;
+    const userData = {
+      fullName: name,
+      city: city,
+      dob: dob,
+      phone: pendingUserForProfile.phoneNumber,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    try {
+      await db.collection('users').doc(uid).set(userData);
+      await showDashboard(pendingUserForProfile, userData);
+    } catch (err) {
+      alert("Save error: " + err.message);
+    }
+  };
+
+  // Logout
+  function logoutAndReset() {
+    auth.signOut().then(() => {
+      loginScreen.classList.remove('hidden');
+      dashboardScreen.classList.add('hidden');
+      createScreen.classList.add('hidden');
+      otpSection.classList.add('hidden');
+      otpInput.value = '';
+      mobileInput.value = '+919999988888';
+      confirmationResult = null;
+      pendingUserForProfile = null;
+      renderMarketScrolls();
+    }).catch(console.error);
+  }
+  document.getElementById('logoutBtnDashboard')?.addEventListener('click', logoutAndReset);
+  document.getElementById('backToLoginFromCreate')?.addEventListener('click', () => {
+    createScreen.classList.add('hidden');
+    loginScreen.classList.remove('hidden');
+    renderMarketScrolls();
+  });
+
+  // Auto sign-in state persistence
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      const profile = await checkUserProfileExists(user.uid);
+      if (profile && !dashboardScreen.classList.contains('hidden') === false && !createScreen.classList.contains('hidden') === false) {
+        // if user logged in and dashboard hidden, decide
+        if (loginScreen.classList.contains('hidden') === false) {
+          if (profile) await showDashboard(user, profile);
+          else switchToCreateAccount();
+        }
+      } else if (user && profile) {
+        // already on dashboard? ensure we show dashboard
+        if (dashboardScreen.classList.contains('hidden')) await showDashboard(user, profile);
+      } else if (user && !profile) {
+        if (createScreen.classList.contains('hidden')) switchToCreateAccount();
+      }
+    } else {
+      // ensure login screen visible
+      loginScreen.classList.remove('hidden');
+      dashboardScreen.classList.add('hidden');
+      createScreen.classList.add('hidden');
+      otpSection.classList.add('hidden');
+      renderMarketScrolls();
+    }
+  });
+
+  // Additional: Initial Market Load + scrolling smooth infinite autoplay via CSS
+  renderMarketScrolls();
+
+  // For a phone like half screen effect: top half login form + bottom market scroll, done via flex
+  // Also add half screen fixed feel: .login-top takes around 48% min-height, market under it auto scroll
+
+  // Add recaptcha invisible div requirement 
+  const recaptchaDiv = document.createElement('div');
+  recaptchaDiv.id = 'recaptcha-container';
+  recaptchaDiv.style.position = 'absolute';
+  recaptchaDiv.style.bottom = '0';
+  recaptchaDiv.style.left = '0';
+  recaptchaDiv.style.opacity = '0';
+  recaptchaDiv.style.pointerEvents = 'none';
+  document.body.appendChild(recaptchaDiv);
+  window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+    size: 'invisible',
+  });
+  // for better OTP, override send method but we used button's own verifier? keep consistency
+  // ensure if first time recaptcha loads, fix: 
+  if (typeof firebase !== 'undefined') {
+    console.log("Firebase ready");
+  }
+  // update any missing dynamic
+  setInterval(() => {
+    // ensure marquee effect continues if dom changes (no need because innerHTML retained)
+  }, 1000);
+</script>
 </body>
 </html>
