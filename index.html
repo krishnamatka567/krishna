@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <title>KRISHNA - Sattam App</title>
+  <title>KRISHNA • Sattam Bazar</title>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <!-- Google Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * {
@@ -21,381 +21,382 @@
 
     body {
       background: #0A0F1E;
-      font-family: 'Inter', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      margin: 0;
+      font-family: 'Inter', sans-serif;
       padding: 12px;
     }
 
-    /* Android App like card container */
-    .app-container {
-      max-width: 420px;
+    /* Android App Card with fixed split background */
+    .android-card {
       width: 100%;
+      max-width: 390px;
       height: 780px;
-      background: #121826;
-      border-radius: 44px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      background: transparent;
+      border-radius: 48px;
       overflow: hidden;
       position: relative;
+      box-shadow: 0 30px 40px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
       display: flex;
       flex-direction: column;
     }
 
-    /* Status bar mock */
-    .status-bar {
-      padding: 14px 20px 6px;
-      color: #eee;
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      justify-content: space-between;
-      background: #121826;
-    }
-
-    /* content wrapper */
-    .screen {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 16px 20px;
-      scroll-behavior: smooth;
-    }
-
-    /* Hide scrollbar but keep functionality */
-    .screen::-webkit-scrollbar {
-      width: 4px;
-    }
-    .screen::-webkit-scrollbar-track {
-      background: #1E2538;
-      border-radius: 8px;
-    }
-    .screen::-webkit-scrollbar-thumb {
-      background: #4F46E5;
-      border-radius: 8px;
-    }
-
-    /* LOGIN TOP HALF + BOTTOM MARKET */
-    .login-top {
-      min-height: 48%;
+    /* TOP HALF — BLUE BACKGROUND (FIXED) */
+    .top-half-blue {
+      background: linear-gradient(145deg, #1E3A8A, #0F2B6D);
+      height: 50%;
+      flex-shrink: 0;
+      position: relative;
+      border-radius: 0 0 32px 32px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 20px 20px 0 20px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 20px 0 10px;
+      z-index: 2;
     }
 
-    .animated-title {
-      font-size: 42px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #FFD966, #FFB347);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 12px;
-      text-align: center;
-      animation: dropLand 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* BOTTOM HALF — WHITE BACKGROUND (SCROLLABLE) */
+    .bottom-half-white {
+      background: #F8FAFF;
+      flex: 1;
+      border-radius: 32px 32px 0 0;
+      margin-top: -24px;
+      padding: 24px 18px 20px 18px;
+      overflow-y: auto;
+      z-index: 3;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
     }
 
+    .bottom-half-white::-webkit-scrollbar {
+      width: 4px;
+    }
+    .bottom-half-white::-webkit-scrollbar-track {
+      background: #E2E8F0;
+      border-radius: 10px;
+    }
+    .bottom-half-white::-webkit-scrollbar-thumb {
+      background: #3B82F6;
+      border-radius: 10px;
+    }
+
+    /* STYLISH KRISHNA FONT - Playfair + animation */
     @keyframes dropLand {
       0% {
         opacity: 0;
-        transform: translateY(-120px) rotateX(-30deg);
+        transform: translateY(-180px) scale(0.9);
+        filter: blur(8px);
       }
-      70% {
-        opacity: 0.9;
-        transform: translateY(8px);
+      60% {
+        opacity: 1;
+        transform: translateY(8px) scale(1.02);
       }
       100% {
         opacity: 1;
-        transform: translateY(0) rotateX(0);
+        transform: translateY(0) scale(1);
+        filter: blur(0);
       }
     }
 
-    .sub-glow {
-      text-align: center;
-      font-size: 13px;
-      color: #8E9AAF;
-      margin-bottom: 28px;
-      letter-spacing: 0.5px;
+    @keyframes gentleGlow {
+      0% { text-shadow: 0 0 0px rgba(255, 200, 100, 0.3); letter-spacing: -0.5px; }
+      50% { text-shadow: 0 0 18px rgba(255, 180, 71, 0.7), 0 2px 10px rgba(0,0,0,0.2); letter-spacing: 1.5px; }
+      100% { text-shadow: 0 0 0px rgba(255, 200, 100, 0.3); letter-spacing: -0.5px; }
     }
 
-    .input-group {
-      background: #1E2538;
-      border-radius: 24px;
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .krishna-stylish {
+      font-family: 'Playfair Display', serif;
+      font-size: 56px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #FFE6B0, #FFB347, #FF8C42, #FFD966);
+      background-size: 300% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-align: center;
+      letter-spacing: 2px;
+      animation: dropLand 0.8s cubic-bezier(0.34, 1.2, 0.64, 1), gentleGlow 3s ease-in-out infinite, shimmer 4s linear infinite;
+      margin-top: 8px;
+      transform-origin: center;
+    }
+
+    /* Input fields */
+    .input-field {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border-radius: 44px;
       padding: 6px 18px;
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 20px;
-      border: 1px solid #2D364F;
-      transition: 0.2s;
+      margin: 16px 0 12px 0;
+      border: 1px solid rgba(255,255,255,0.3);
     }
-    .input-group i {
-      color: #6C7A96;
+    .input-field i {
+      color: #FFD966;
       font-size: 18px;
     }
-    .input-group input {
+    .input-field input {
       background: transparent;
       border: none;
       flex: 1;
-      padding: 16px 0;
+      padding: 14px 0;
       font-size: 16px;
-      color: #F0F3FA;
+      color: white;
       outline: none;
+      font-weight: 500;
     }
-    .input-group input::placeholder {
-      color: #5C6A87;
+    .input-field input::placeholder {
+      color: #CDE0FF;
+      font-weight: 400;
     }
-
-    .btn-primary {
-      background: linear-gradient(95deg, #6C5CE7, #4F46E5);
+    .input-field input[type="number"]::-webkit-inner-spin-button, 
+    .input-field input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .btn-gradient {
+      background: linear-gradient(95deg, #FFB347, #FF8C42);
       border: none;
       width: 100%;
       padding: 14px;
-      border-radius: 40px;
+      border-radius: 60px;
       font-weight: 700;
       font-size: 16px;
-      color: white;
+      color: #1E2A47;
       margin: 8px 0;
       cursor: pointer;
       transition: 0.2s;
-      box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.2);
     }
-    .btn-primary:active { transform: scale(0.97); opacity: 0.9;}
-
-    .divider {
+    .btn-gradient:active { transform: scale(0.97); }
+    .divider-light {
       display: flex;
       align-items: center;
-      text-align: center;
-      margin: 20px 0;
-      color: #5F6E8C;
+      color: #E2E8F0;
       font-size: 12px;
+      margin: 14px 0 10px;
     }
-    .divider::before, .divider::after {
+    .divider-light::before, .divider-light::after {
       content: '';
       flex: 1;
-      border-bottom: 1px solid #2D364F;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
     }
-    .divider::before { margin-right: 12px; }
-    .divider::after { margin-left: 12px; }
+    .divider-light::before { margin-right: 12px; }
+    .divider-light::after { margin-left: 12px; }
 
-    /* market results - smooth scrolling repeated */
-    .market-section {
-      background: #0F141F;
-      border-radius: 32px;
-      padding: 10px 0;
-      margin-top: 12px;
-      margin-bottom: 20px;
-      border: 1px solid #262E44;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-
-    .market-header {
-      padding: 6px 16px;
-      font-weight: 600;
-      color: #FFB347;
-      font-size: 14px;
-      letter-spacing: 1px;
-    }
-
-    .marquee-wrapper {
-      overflow: hidden;
-      white-space: nowrap;
-      position: relative;
-      width: 100%;
-    }
-
-    .smooth-scroll-content {
-      display: inline-block;
-      white-space: nowrap;
-      animation: scrollHorizontal 25s linear infinite;
-      padding-right: 20px;
-    }
-
-    .market-card {
-      display: inline-block;
-      background: #1A2132;
-      margin-right: 14px;
-      padding: 10px 20px;
+    /* MARKET VERTICAL SCROLL - Clean, no extra text */
+    .market-vertical-scroll {
+      background: #FFFFFF;
       border-radius: 28px;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-      vertical-align: middle;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      overflow: hidden;
+      margin: 12px 0 20px;
+      border: 1px solid #EEF2F9;
     }
-    .market-name {
+    .market-header {
+      padding: 14px 18px;
+      background: #F8FAFF;
       font-weight: 700;
-      font-size: 16px;
-      color: #F5E7C8;
+      color: #1E293B;
+      border-bottom: 1px solid #E2E8F0;
+      font-size: 14px;
     }
-    .market-numbers {
-      font-family: monospace;
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      color: #B9F6CA;
+    .v-scroll-area {
+      height: 260px;
+      overflow-y: auto;
+      padding: 8px 0;
+      scroll-behavior: smooth;
     }
-
-    @keyframes scrollHorizontal {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+    .v-auto-scroll {
+      animation: scrollUpSlow 28s linear infinite;
     }
-
-    /* create account form (hidden by default) */
-    .create-account-form {
-      margin-top: 20px;
-      background: #0F141F;
-      border-radius: 32px;
-      padding: 20px 16px;
-      margin-bottom: 20px;
+    @keyframes scrollUpSlow {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-48%); }
     }
-
-    /* dashboard style */
-    .dashboard-header {
+    .market-item {
+      background: #ffffff;
+      margin: 8px 16px;
+      padding: 14px 18px;
+      border-radius: 24px;
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      padding: 12px 0 10px;
-      border-bottom: 1px solid #2A334C;
-      margin-bottom: 20px;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03), inset 0 0 0 1px #F0F2F8;
     }
-    .welcome-text {
-      font-size: 22px;
+    .market-left .name {
+      font-weight: 800;
+      color: #0F172A;
+      font-size: 16px;
+    }
+    .market-left .series {
+      font-size: 11px;
+      color: #5B6E8C;
+    }
+    .market-numbers {
+      font-family: 'Inter', monospace;
       font-weight: 700;
-      color: #FFE6B3;
-    }
-    .logout-btn {
-      background: #2C354E;
-      border: none;
-      padding: 8px 18px;
+      background: #FEF3C7;
+      padding: 6px 14px;
       border-radius: 40px;
-      color: #FFB347;
-      font-weight: 500;
+      color: #B45309;
+      font-size: 16px;
+      letter-spacing: 1px;
     }
-    .stats-grid {
-      background: linear-gradient(145deg, #1A2132, #141B2A);
-      border-radius: 28px;
+    .white-card {
+      background: white;
+      border-radius: 32px;
       padding: 18px;
-      margin-bottom: 28px;
+      margin: 10px 0;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
     }
-    .city-badge {
-      display: inline-block;
-      background: #4F46E5;
-      padding: 4px 12px;
-      border-radius: 50px;
+    .back-link {
+      color: #3B82F6;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 12px;
+      display: block;
+    }
+    .toast-msg {
+      background: #0F172A;
+      color: #FFD966;
+      padding: 10px;
+      border-radius: 60px;
       font-size: 13px;
+      text-align: center;
+      margin: 8px 0;
     }
-
-    /* half screen fixed and bottom half scrollable? Actually requirement: top half fixed? we use flex scrolling */
-    .fixed-half-illusion {
-      flex-shrink: 0;
-    }
-    .bottom-scrollable {
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    /* hiding screens */
     .hidden {
       display: none;
     }
-
-    .toast-msg {
-      background: #1F2937;
-      color: #FACC15;
-      padding: 10px;
-      border-radius: 24px;
-      text-align: center;
-      margin: 8px 0;
-      font-size: 13px;
+    .profile-card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 14px;
+      margin-top: 12px;
     }
-    button {
-      background: none;
-      border: none;
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .resend-timer {
+      font-size: 13px;
+      text-align: center;
+      margin-top: 6px;
+      color: #FFE6B3;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+      transform: none;
+    }
+    /* Remove extra text inside market header icons only */
+    .market-header i {
+      margin-right: 6px;
+    }
+    .no-extra-text {
+      font-weight: 600;
+    }
+    .mobile-prefix {
+      color: #FFD966;
+      font-weight: 600;
+      font-size: 15px;
+      background: rgba(0,0,0,0.2);
+      padding: 4px 10px;
+      border-radius: 30px;
+      letter-spacing: 0.5px;
     }
   </style>
 </head>
 <body>
-<div class="app-container" id="appRoot">
-  <div class="status-bar">
-    <span>9:41</span>
-    <span><i class="fas fa-battery-full"></i> <i class="fas fa-signal"></i></span>
-  </div>
+<div class="android-card" id="appRoot">
 
-  <!-- LOGIN SCREEN (visible by default) -->
-  <div id="loginScreen" class="screen">
-    <div class="login-top">
-      <div class="animated-title">KRISHNA</div>
-      <div class="sub-glow">matka · satta · bazar</div>
-      
-      <div class="input-group">
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen">
+    <div class="top-half-blue">
+      <div class="krishna-stylish">KRISHNA</div>
+      <!-- Mobile input with NO visible +91 prefix text in front, but placeholder instructs user -->
+      <div class="input-field">
         <i class="fas fa-phone-alt"></i>
-        <input type="tel" id="mobileNumber" placeholder="+91 99999 88888" value="+919999988888">
+        <input type="tel" id="mobileNumber" placeholder="Enter 10 digit mobile" maxlength="10" inputmode="numeric">
       </div>
-      <button id="sendOtpBtn" class="btn-primary"><i class="fas fa-key"></i> Send OTP</button>
-      <div class="divider">or continue with</div>
-      <!-- OTP section appear after send -->
-      <div id="otpSection" class="hidden">
-        <div class="input-group">
-          <i class="fas fa-lock"></i>
-          <input type="text" id="otpCode" placeholder="6-digit OTP" maxlength="6">
+      <button id="sendOtpBtn" class="btn-gradient"><i class="fas fa-paper-plane"></i> Send OTP</button>
+      <div id="otpSectionLogin" class="hidden">
+        <div class="input-field">
+          <i class="fas fa-key"></i>
+          <input type="text" id="otpCode" placeholder="6-digit OTP" maxlength="6" inputmode="numeric">
         </div>
-        <button id="verifyOtpBtn" class="btn-primary">Verify & Login</button>
+        <button id="verifyOtpBtn" class="btn-gradient"><i class="fas fa-check-circle"></i> Verify & Login</button>
+        <div id="resendOtpTimer" class="resend-timer">Resend OTP in 60s</div>
       </div>
       <div id="loginMessage" class="toast-msg hidden"></div>
+      <div class="divider-light"></div>
     </div>
-
-    <!-- Bottom half: market results with auto smooth scrolling repeated -->
-    <div class="market-section">
-      <div class="market-header"><i class="fas fa-chart-line"></i> LIVE MARKET STREAM</div>
-      <div class="marquee-wrapper">
-        <div class="smooth-scroll-content" id="marketScroller">
-          <!-- dynamic repeated market items injected via JS -->
+    <div class="bottom-half-white">
+      <div class="market-vertical-scroll">
+        <div class="market-header"><i class="fas fa-chart-line"></i> LIVE UPDATES</div>
+        <div class="v-scroll-area" id="marketVerticalContainer">
+          <div id="marketVerticalInner" class="v-auto-scroll"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CREATE ACCOUNT SCREEN (hidden initial) -->
-  <div id="createAccountScreen" class="screen hidden">
-    <div style="margin-top: 20px;">
-      <div class="animated-title" style="font-size: 28px;">✨ Complete Profile</div>
-      <div class="create-account-form">
-        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="fullName" placeholder="Full Name"></div>
-        <div class="input-group"><i class="fas fa-city"></i><input type="text" id="cityName" placeholder="City"></div>
-        <div class="input-group"><i class="fas fa-calendar-alt"></i><input type="date" id="dobInput" placeholder="Date of Birth"></div>
-        <button id="saveProfileBtn" class="btn-primary">Complete Registration</button>
-        <button id="backToLoginFromCreate" style="background:transparent; color:#8E9AAF; margin-top:12px;">← Back to Login</button>
-      </div>
+  <!-- CREATE ACCOUNT SCREEN -->
+  <div id="createAccountScreen" class="hidden">
+    <div class="top-half-blue">
+      <div class="krishna-stylish" style="font-size: 42px;">COMPLETE</div>
+      <div class="input-field"><i class="fas fa-user"></i><input type="text" id="fullName" placeholder="Full Name"></div>
+      <div class="input-field"><i class="fas fa-city"></i><input type="text" id="cityName" placeholder="City"></div>
+      <div class="input-field"><i class="fas fa-calendar"></i><input type="date" id="dobInput" placeholder="Date of Birth"></div>
+      <button id="saveProfileBtn" class="btn-gradient"><i class="fas fa-save"></i> Create Account</button>
+      <button id="backToLoginFromCreate" style="background:transparent; color:#FFD966; margin-top:6px;">← Back to Login</button>
     </div>
-    <!-- market also visible on create screen for continuity -->
-    <div class="market-section">
-      <div class="market-header">📊 TRENDING MARKETS</div>
-      <div class="marquee-wrapper"><div class="smooth-scroll-content" id="marketScroller2"></div></div>
+    <div class="bottom-half-white">
+      <div class="market-vertical-scroll">
+        <div class="market-header"><i class="fas fa-chart-simple"></i> MARKET FEED</div>
+        <div class="v-scroll-area"><div id="createMarketScroll" class="v-auto-scroll"></div></div>
+      </div>
     </div>
   </div>
 
-  <!-- DASHBOARD SCREEN (after login / existing user) -->
-  <div id="dashboardScreen" class="screen hidden">
-    <div class="dashboard-header">
-      <span class="welcome-text">Welcome, <span id="dashboardName">KRISHNA</span></span>
-      <button id="logoutBtnDashboard" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Exit</button>
+  <!-- DASHBOARD SCREEN -->
+  <div id="dashboardScreen" class="hidden">
+    <div class="top-half-blue">
+      <div class="flex-between" style="align-items: center; margin-top: 15px;">
+        <div class="krishna-stylish" style="font-size: 34px; animation: dropLand 0.6s, gentleGlow 3s infinite, shimmer 4s linear infinite;">KRISHNA</div>
+        <button id="logoutBtnDashboard" style="background:rgba(255,255,255,0.2); padding:8px 14px; border-radius: 60px; color:white; border:none;"><i class="fas fa-sign-out-alt"></i> Exit</button>
+      </div>
+      <div class="profile-card">
+        <div style="color:white; font-weight:600; font-size:18px;"><i class="fas fa-user-circle"></i> <span id="dashboardName">User</span></div>
+        <div style="color:#E2E8F0; font-size:14px; margin-top:6px;"><i class="fas fa-map-marker-alt"></i> City: <span id="dashboardCity">—</span></div>
+        <div style="color:#E2E8F0; font-size:14px;"><i class="fas fa-gift"></i> DOB: <span id="dashboardDob">—</span></div>
+      </div>
     </div>
-    <div class="stats-grid">
-      <p><i class="fas fa-map-marker-alt"></i> City: <strong id="dashboardCity">—</strong></p>
-      <p><i class="fas fa-birthday-cake"></i> DOB: <strong id="dashboardDob">—</strong></p>
-      <div class="city-badge"><i class="fas fa-check-circle"></i> Verified Member</div>
+    <div class="bottom-half-white">
+      <div class="market-vertical-scroll">
+        <div class="market-header"><i class="fas fa-trophy"></i> WINNING RESULTS</div>
+        <div class="v-scroll-area"><div id="dashboardMarketScroll" class="v-auto-scroll"></div></div>
+      </div>
+      <div style="margin-top: 20px; background:#EFF6FF; border-radius: 24px; padding: 14px; text-align: center; color:#2563EB; font-size:13px;">
+        <i class="fas fa-chart-line"></i> Active member
+      </div>
     </div>
-    <div class="market-section" style="margin-top: 0;">
-      <div class="market-header">🏆 WINNING RESULTS (Live Scroll)</div>
-      <div class="marquee-wrapper"><div class="smooth-scroll-content" id="marketScrollerDash"></div></div>
-    </div>
-    <div style="padding: 16px 0; text-align:center; color:#6C7A96; font-size:13px;">✨ Your activity dashboard ✨</div>
   </div>
 </div>
 
 <script>
-  // FIREBASE CONFIG
+  // FIREBASE INIT
   const firebaseConfig = {
     apiKey: "AIzaSyAhMB5memk6Q4NbDX0_c-Wy5cs3Lg3yk4E",
     authDomain: "krishna-567.firebaseapp.com",
@@ -414,249 +415,305 @@
   const createScreen = document.getElementById('createAccountScreen');
   const dashboardScreen = document.getElementById('dashboardScreen');
   const sendOtpBtn = document.getElementById('sendOtpBtn');
-  const otpSection = document.getElementById('otpSection');
-  const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+  const otpSection = document.getElementById('otpSectionLogin');
+  const verifyBtn = document.getElementById('verifyOtpBtn');
   const mobileInput = document.getElementById('mobileNumber');
   const otpInput = document.getElementById('otpCode');
   const loginMsg = document.getElementById('loginMessage');
-  const saveProfileBtn = document.getElementById('saveProfileBtn');
+  const saveProfile = document.getElementById('saveProfileBtn');
   const fullNameInput = document.getElementById('fullName');
   const cityInput = document.getElementById('cityName');
-  const dobInput = document.getElementById('dobInput');
+  const dobInputElem = document.getElementById('dobInput');
+  const backToLoginBtn = document.getElementById('backToLoginFromCreate');
+  const logoutDashboard = document.getElementById('logoutBtnDashboard');
+  const resendTimerDiv = document.getElementById('resendOtpTimer');
 
-  // Helper UI
-  function showToast(containerEl, message, isError = false) {
-    const msgDiv = containerEl || loginMsg;
-    msgDiv.innerText = message;
-    msgDiv.classList.remove('hidden');
-    msgDiv.style.background = isError ? '#3b2a2a' : '#1F2937';
-    setTimeout(() => msgDiv.classList.add('hidden'), 3000);
-  }
-
-  let confirmationResult = null;
-  let pendingMobile = null;
-
-  // Market Data sample (repeated items for smooth scroll)
-  const marketEntries = [
-    { name: "SRIDEVI", numbers: "124-71-560" },
-    { name: "TIME BAZAR", numbers: "123-62-570" },
-    { name: "MILAN DAY", numbers: "456-89-234" },
-    { name: "RAJDHANI", numbers: "789-34-999" },
-    { name: "KALYAN", numbers: "321-54-777" },
-    { name: "MAIN BAZAR", numbers: "654-32-111" }
+  // Market Data (No extra marketing text)
+  const MARKET_LIST = [
+    { name: "SRIDEVI", numbers: "124-71-560", subtitle: "Bazar" },
+    { name: "TIME BAZAR", numbers: "123-62-570", subtitle: "Day" },
+    { name: "MILAN NIGHT", numbers: "456-89-234", subtitle: "Super" },
+    { name: "RAJDHANI", numbers: "789-34-999", subtitle: "Night" },
+    { name: "KALYAN", numbers: "321-54-777", subtitle: "Open" },
+    { name: "MAIN BAZAR", numbers: "654-32-111", subtitle: "Close" },
+    { name: "SRIDEVI", numbers: "112-88-443", subtitle: "Morning" },
+    { name: "TIME BAZAR", numbers: "876-54-321", subtitle: "Gold" }
   ];
-  // function to generate repeated HTML items for infinite smooth scrolling
-  function generateMarketHTML() {
+
+  function generateVerticalMarketHTML() {
     let html = '';
-    // repeat 3 times for seamless loop
-    for (let repeat = 0; repeat < 3; repeat++) {
-      marketEntries.forEach(item => {
-        html += `<div class="market-card"><div class="market-name">${item.name}</div><div class="market-numbers">${item.numbers}</div></div>`;
+    for (let i = 0; i < 3; i++) {
+      MARKET_LIST.forEach(item => {
+        html += `
+          <div class="market-item">
+            <div class="market-left">
+              <div class="name">${item.name}</div>
+              <div class="series">${item.subtitle}</div>
+            </div>
+            <div class="market-numbers">${item.numbers}</div>
+          </div>
+        `;
       });
     }
     return html;
   }
 
-  function renderMarketScrolls() {
-    const marketHTML = generateMarketHTML();
-    const scroller1 = document.getElementById('marketScroller');
-    const scroller2 = document.getElementById('marketScroller2');
-    const scrollerDash = document.getElementById('marketScrollerDash');
-    if (scroller1) scroller1.innerHTML = marketHTML;
-    if (scroller2) scroller2.innerHTML = marketHTML;
-    if (scrollerDash) scrollerDash.innerHTML = marketHTML;
+  function refreshAllMarkets() {
+    const marketHtml = generateVerticalMarketHTML();
+    const container1 = document.getElementById('marketVerticalInner');
+    const container2 = document.getElementById('createMarketScroll');
+    const container3 = document.getElementById('dashboardMarketScroll');
+    if (container1) container1.innerHTML = marketHtml;
+    if (container2) container2.innerHTML = marketHtml;
+    if (container3) container3.innerHTML = marketHtml;
   }
 
-  // check if user exists in firestore (by UID)
-  async function checkUserProfileExists(uid) {
-    const docRef = db.collection('users').doc(uid);
-    const doc = await docRef.get();
+  function showToast(message, isError = false, container = loginMsg) {
+    if (container) {
+      container.innerText = message;
+      container.classList.remove('hidden');
+      container.style.background = isError ? '#7F1A1A' : '#1E293B';
+      setTimeout(() => container.classList.add('hidden'), 3000);
+    } else alert(message);
+  }
+
+  let confirmationResult = null;
+  let pendingUser = null;
+  let countdownInterval = null;
+
+  function startResendTimer() {
+    let seconds = 60;
+    if (resendTimerDiv) {
+      resendTimerDiv.style.pointerEvents = 'none';
+      resendTimerDiv.style.opacity = '0.7';
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        if (seconds <= 0) {
+          clearInterval(countdownInterval);
+          resendTimerDiv.innerHTML = `<i class="fas fa-redo-alt"></i> Resend OTP`;
+          resendTimerDiv.style.pointerEvents = 'auto';
+          resendTimerDiv.style.opacity = '1';
+          resendTimerDiv.style.cursor = 'pointer';
+        } else {
+          resendTimerDiv.innerHTML = `Resend OTP in ${seconds}s`;
+          seconds--;
+        }
+      }, 1000);
+    }
+  }
+
+  async function resendOtpHandler() {
+    if (!mobileInput.value.trim() || mobileInput.value.trim().length !== 10) {
+      showToast("Enter valid 10-digit mobile number", true);
+      return;
+    }
+    const phone = `+91${mobileInput.value.trim()}`;
+    try {
+      const recaptcha = new firebase.auth.RecaptchaVerifier('sendOtpBtn', { size: 'invisible' });
+      confirmationResult = await auth.signInWithPhoneNumber(phone, recaptcha);
+      showToast("OTP resent successfully!");
+      startResendTimer();
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  }
+
+  // Check existing profile
+  async function userHasProfile(uid) {
+    const doc = await db.collection('users').doc(uid).get();
     return doc.exists ? doc.data() : null;
   }
 
-  // After login verification
-  async function handlePostAuthentication(user) {
+  async function redirectBasedOnProfile(user) {
     if (!user) return;
-    const profileData = await checkUserProfileExists(user.uid);
-    if (profileData) {
-      // existing user -> dashboard
-      showDashboard(user, profileData);
+    const profile = await userHasProfile(user.uid);
+    if (profile) {
+      showDashboard(user, profile);
     } else {
-      // new user: show create account screen
-      pendingUserForProfile = user;
-      switchToCreateAccount();
+      pendingUser = user;
+      showCreateAccount();
     }
   }
 
-  let pendingUserForProfile = null;
-
-  function switchToCreateAccount() {
-    loginScreen.classList.add('hidden');
-    dashboardScreen.classList.add('hidden');
-    createScreen.classList.remove('hidden');
-    renderMarketScrolls();
-  }
-
-  async function showDashboard(user, profile) {
+  function showDashboard(user, profileData) {
     loginScreen.classList.add('hidden');
     createScreen.classList.add('hidden');
     dashboardScreen.classList.remove('hidden');
-    document.getElementById('dashboardName').innerText = profile.fullName || user.phoneNumber || "KRISHNA";
-    document.getElementById('dashboardCity').innerText = profile.city || "Not set";
-    document.getElementById('dashboardDob').innerText = profile.dob || "—";
-    renderMarketScrolls();
+    document.getElementById('dashboardName').innerText = profileData.fullName || user.phoneNumber || "KRISHNA";
+    document.getElementById('dashboardCity').innerText = profileData.city || "—";
+    document.getElementById('dashboardDob').innerText = profileData.dob || "—";
+    refreshAllMarkets();
   }
 
-  // Send OTP
+  function showCreateAccount() {
+    loginScreen.classList.add('hidden');
+    dashboardScreen.classList.add('hidden');
+    createScreen.classList.remove('hidden');
+    refreshAllMarkets();
+  }
+
+  function showLoginScreen(resetOtp = true) {
+    loginScreen.classList.remove('hidden');
+    createScreen.classList.add('hidden');
+    dashboardScreen.classList.add('hidden');
+    if (resetOtp) {
+      otpSection.classList.add('hidden');
+      otpInput.value = '';
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (resendTimerDiv) resendTimerDiv.innerHTML = `Resend OTP in 60s`;
+    }
+    refreshAllMarkets();
+  }
+
+  // Mobile number restriction: only 10 digits
+  mobileInput.addEventListener('input', (e) => {
+    let val = e.target.value.replace(/\D/g, '').slice(0, 10);
+    e.target.value = val;
+  });
+
+  // Send OTP with +91 prefix internally (no visible front text)
   sendOtpBtn.onclick = async () => {
-    let phone = mobileInput.value.trim();
-    if (!phone) {
-      showToast(loginMsg, "Enter mobile number", true);
+    let rawMobile = mobileInput.value.trim();
+    if (!rawMobile || rawMobile.length !== 10) {
+      showToast("Enter valid 10-digit mobile number", true);
       return;
     }
-    if (!phone.startsWith('+')) phone = '+91' + phone;
+    const fullPhone = `+91${rawMobile}`;
     try {
-      const appVerifier = new firebase.auth.RecaptchaVerifier('sendOtpBtn', {
-        size: 'invisible',
-        'callback': () => {}
-      });
-      confirmationResult = await auth.signInWithPhoneNumber(phone, appVerifier);
-      pendingMobile = phone;
+      const recaptcha = new firebase.auth.RecaptchaVerifier('sendOtpBtn', { size: 'invisible' });
+      confirmationResult = await auth.signInWithPhoneNumber(fullPhone, recaptcha);
       otpSection.classList.remove('hidden');
-      showToast(loginMsg, "OTP sent successfully!");
+      showToast("OTP sent successfully!");
+      startResendTimer();
+      if (resendTimerDiv) {
+        resendTimerDiv.onclick = () => {
+          if (resendTimerDiv.innerText.includes('Resend OTP') && !resendTimerDiv.innerText.includes('in')) {
+            resendOtpHandler();
+          }
+        };
+      }
     } catch (err) {
       console.error(err);
-      showToast(loginMsg, err.message, true);
+      showToast(err.message, true);
     }
   };
 
-  verifyOtpBtn.onclick = async () => {
+  // Verify OTP
+  verifyBtn.onclick = async () => {
     const otp = otpInput.value.trim();
-    if (!otp || !confirmationResult) {
-      showToast(loginMsg, "Enter valid OTP or request again", true);
+    if (!otp || otp.length !== 6) {
+      showToast("Enter 6-digit OTP", true);
+      return;
+    }
+    if (!confirmationResult) {
+      showToast("Request OTP first", true);
       return;
     }
     try {
       const result = await confirmationResult.confirm(otp);
       const user = result.user;
-      // check if profile exists in firestore
-      const profileExists = await checkUserProfileExists(user.uid);
-      if (profileExists) {
-        await showDashboard(user, profileExists);
+      const profile = await userHasProfile(user.uid);
+      if (profile) {
+        await showDashboard(user, profile);
       } else {
-        pendingUserForProfile = user;
-        switchToCreateAccount();
+        pendingUser = user;
+        showCreateAccount();
       }
+      if (countdownInterval) clearInterval(countdownInterval);
     } catch (err) {
-      showToast(loginMsg, "Invalid OTP. Try again", true);
+      showToast("Invalid OTP, please try again", true);
     }
   };
 
   // Save new profile
-  saveProfileBtn.onclick = async () => {
+  saveProfile.onclick = async () => {
     const name = fullNameInput.value.trim();
     const city = cityInput.value.trim();
-    const dob = dobInput.value.trim();
+    const dob = dobInputElem.value.trim();
     if (!name || !city || !dob) {
-      alert("Please fill all fields");
+      alert("All fields required (Name, City, Date of Birth)");
       return;
     }
-    if (!pendingUserForProfile && auth.currentUser) pendingUserForProfile = auth.currentUser;
-    if (!pendingUserForProfile) {
-      alert("Session expired, please login again.");
-      window.location.reload();
+    let currentUser = pendingUser || auth.currentUser;
+    if (!currentUser) {
+      alert("Session expired. Login again.");
+      showLoginScreen();
       return;
     }
-    const uid = pendingUserForProfile.uid;
     const userData = {
       fullName: name,
       city: city,
       dob: dob,
-      phone: pendingUserForProfile.phoneNumber,
+      phone: currentUser.phoneNumber,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     try {
-      await db.collection('users').doc(uid).set(userData);
-      await showDashboard(pendingUserForProfile, userData);
+      await db.collection('users').doc(currentUser.uid).set(userData);
+      await showDashboard(currentUser, userData);
     } catch (err) {
-      alert("Save error: " + err.message);
+      alert("Error: " + err.message);
     }
   };
 
   // Logout
-  function logoutAndReset() {
+  function logoutUser() {
     auth.signOut().then(() => {
-      loginScreen.classList.remove('hidden');
-      dashboardScreen.classList.add('hidden');
-      createScreen.classList.add('hidden');
-      otpSection.classList.add('hidden');
-      otpInput.value = '';
-      mobileInput.value = '+919999988888';
+      showLoginScreen(true);
+      pendingUser = null;
       confirmationResult = null;
-      pendingUserForProfile = null;
-      renderMarketScrolls();
+      otpInput.value = '';
+      mobileInput.value = '';
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (resendTimerDiv) resendTimerDiv.innerHTML = `Resend OTP in 60s`;
+      refreshAllMarkets();
     }).catch(console.error);
   }
-  document.getElementById('logoutBtnDashboard')?.addEventListener('click', logoutAndReset);
-  document.getElementById('backToLoginFromCreate')?.addEventListener('click', () => {
-    createScreen.classList.add('hidden');
-    loginScreen.classList.remove('hidden');
-    renderMarketScrolls();
+
+  logoutDashboard?.addEventListener('click', logoutUser);
+  backToLoginBtn?.addEventListener('click', () => {
+    showLoginScreen(true);
   });
 
-  // Auto sign-in state persistence
+  // Firebase Auth Listener (auto login persistence)
   auth.onAuthStateChanged(async (user) => {
     if (user) {
-      const profile = await checkUserProfileExists(user.uid);
-      if (profile && !dashboardScreen.classList.contains('hidden') === false && !createScreen.classList.contains('hidden') === false) {
-        // if user logged in and dashboard hidden, decide
-        if (loginScreen.classList.contains('hidden') === false) {
-          if (profile) await showDashboard(user, profile);
-          else switchToCreateAccount();
-        }
-      } else if (user && profile) {
-        // already on dashboard? ensure we show dashboard
-        if (dashboardScreen.classList.contains('hidden')) await showDashboard(user, profile);
-      } else if (user && !profile) {
-        if (createScreen.classList.contains('hidden')) switchToCreateAccount();
+      const profile = await userHasProfile(user.uid);
+      if (profile && dashboardScreen.classList.contains('hidden')) {
+        await showDashboard(user, profile);
+      } else if (!profile && !createScreen.classList.contains('hidden') === false) {
+        pendingUser = user;
+        showCreateAccount();
+      } else if (profile && dashboardScreen.classList.contains('hidden')) {
+        showDashboard(user, profile);
+      } else if (!profile && !dashboardScreen.classList.contains('hidden')) {
+        showCreateAccount();
       }
     } else {
-      // ensure login screen visible
-      loginScreen.classList.remove('hidden');
-      dashboardScreen.classList.add('hidden');
-      createScreen.classList.add('hidden');
-      otpSection.classList.add('hidden');
-      renderMarketScrolls();
+      if (!loginScreen.classList.contains('hidden') === false) showLoginScreen(true);
+      else showLoginScreen(true);
     }
   });
 
-  // Additional: Initial Market Load + scrolling smooth infinite autoplay via CSS
-  renderMarketScrolls();
+  // recaptcha container
+  const recDiv = document.createElement('div');
+  recDiv.id = 'recaptcha-hidden';
+  recDiv.style.position = 'absolute';
+  recDiv.style.bottom = '0px';
+  recDiv.style.left = '0px';
+  recDiv.style.opacity = '0';
+  recDiv.style.pointerEvents = 'none';
+  document.body.appendChild(recDiv);
+  new firebase.auth.RecaptchaVerifier('recaptcha-hidden', { size: 'invisible' });
 
-  // For a phone like half screen effect: top half login form + bottom market scroll, done via flex
-  // Also add half screen fixed feel: .login-top takes around 48% min-height, market under it auto scroll
-
-  // Add recaptcha invisible div requirement 
-  const recaptchaDiv = document.createElement('div');
-  recaptchaDiv.id = 'recaptcha-container';
-  recaptchaDiv.style.position = 'absolute';
-  recaptchaDiv.style.bottom = '0';
-  recaptchaDiv.style.left = '0';
-  recaptchaDiv.style.opacity = '0';
-  recaptchaDiv.style.pointerEvents = 'none';
-  document.body.appendChild(recaptchaDiv);
-  window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-    size: 'invisible',
-  });
-  // for better OTP, override send method but we used button's own verifier? keep consistency
-  // ensure if first time recaptcha loads, fix: 
-  if (typeof firebase !== 'undefined') {
-    console.log("Firebase ready");
-  }
-  // update any missing dynamic
-  setInterval(() => {
-    // ensure marquee effect continues if dom changes (no need because innerHTML retained)
-  }, 1000);
+  refreshAllMarkets();
+  // Ensure scroll area height
+  const styleFix = document.createElement('style');
+  styleFix.textContent = `.v-scroll-area { overflow-y: hidden !important; } .v-auto-scroll { display: flex; flex-direction: column; }`;
+  document.head.appendChild(styleFix);
+  setTimeout(() => {
+    const areas = document.querySelectorAll('.v-scroll-area');
+    areas.forEach(area => { if(area && !area.style.height) area.style.height = '260px'; });
+  }, 100);
 </script>
 </body>
 </html>
